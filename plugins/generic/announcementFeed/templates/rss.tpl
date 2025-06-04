@@ -1,9 +1,9 @@
 {**
  * plugins/generic/announcementFeed/templates/rss.tpl
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * RSS feed template
  *
@@ -21,37 +21,35 @@
 		<link>{url journal=$journal->getPath()}</link>
 		{if $journal->getLocalizedDescription()}
 			{assign var="description" value=$journal->getLocalizedDescription()}
-		{elseif $journal->getLocalizedSetting('searchDescription')}
-			{assign var="description" value=$journal->getLocalizedSetting('searchDescription')}
+		{elseif $journal->getLocalizedData('searchDescription')}
+			{assign var="description" value=$journal->getLocalizedData('searchDescription')}
 		{/if}
 		<description>{$description|strip|escape:"html"}</description>
 
 		{* optional elements *}
-		{if $journal->getPrimaryLocale()}
-		<dc:language>{$journal->getPrimaryLocale()|replace:'_':'-'|strip|escape:"html"}</dc:language>
-		{/if}
+		<dc:language>{$language|escape}</dc:language>
 
 		<items>
 			{foreach from=$announcements item=announcement}
 			<rdf:Seq>
-				<rdf:li rdf:resource="{url page="announcement" op="view" path=$announcement->getId()}"/>
+				<rdf:li rdf:resource="{url page="announcement" op="view" path=$announcement->id}"/>
 			</rdf:Seq>
 			{/foreach}
 		</items>
 	</channel>
 
 {foreach from=$announcements item=announcement}
-	<item rdf:about="{url page="announcement" op="view" path=$announcement->getId()}">
+	<item rdf:about="{url page="announcement" op="view" path=$announcement->id}">
 		{* required elements *}
-		<title>{$announcement->getLocalizedTitleFull()|strip|escape:"html"}</title>
-		<link>{url page="announcement" op="view" path=$announcement->getId()}</link>
+		<title>{$announcement->getLocalizedData('fullTitle')|strip|escape:"html"}</title>
+		<link>{url page="announcement" op="view" path=$announcement->id}</link>
 
 		{* optional elements *}
-		{if $announcement->getLocalizedDescription()}
-		<description>{$announcement->getLocalizedDescription()|strip|escape:"html"}</description>
+		{if $announcement->getLocalizedData('description')}
+		<description>{$announcement->getLocalizedData('description')|strip|escape:"html"}</description>
 		{/if}
 		<dc:creator>{$journal->getLocalizedName()|strip|escape:"html"}</dc:creator>
-		<dc:date>{$announcement->getDatePosted()|date_format:"%Y-%m-%d"}</dc:date>
+		<dc:date>{$announcement->datePosted->format("%Y-%m-%d")}</dc:date>
 	</item>
 {/foreach}
 

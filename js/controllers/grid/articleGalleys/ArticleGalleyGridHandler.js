@@ -1,9 +1,9 @@
 /**
  * @file js/controllers/grid/articleGalleys/ArticleGalleyGridHandler.js
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2000-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2000-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @class ArticleGalleyGridHandler
  * @ingroup js_controllers_grid
@@ -56,12 +56,14 @@
 			prototype.uploadFileHandler_ = function(sourceElement, event, rowId) {
 
 		// FIXME: Inter-widget messaging is needed here.
-		setTimeout(function() {
-			$('a[id^="component-grid-articlegalleys-articlegalleygrid-row-' + rowId +
-					'-addFile-button-"]').click();
-		}, 0);
+		var selector = 'a[id^="component-grid-articlegalleys-articlegalleygrid-row-' +
+				rowId + '-addFile-button-"]';
+		$.when($(selector)).then(function() {
+			$(function() {
+				$(selector).click();
+			});
+		});
 	};
 
 
-/** @param {jQuery} $ jQuery closure. */
 }(jQuery));

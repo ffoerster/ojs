@@ -1,9 +1,9 @@
 {**
  * templates/frontend/objects/issue_summary.tpl
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @brief View of an Issue which displays a summary for use in lists
  *
@@ -19,22 +19,24 @@
 
 	{if $issueCover}
 		<a class="cover" href="{url op="view" path=$issue->getBestIssueId()}">
-			<img src="{$issueCover|escape}"{if $issue->getLocalizedCoverImageAltText() != ''} alt="{$issue->getLocalizedCoverImageAltText()|escape}"{/if}>
+			<img src="{$issueCover|escape}" alt="{$issue->getLocalizedCoverImageAltText()|escape|default:''}">
 		</a>
 	{/if}
 
-	<a class="title" href="{url op="view" path=$issue->getBestIssueId()}">
-		{if $issueTitle}
-			{$issueTitle|escape}
-		{else}
-			{$issueSeries|escape}
+	<h2>
+		<a class="title" href="{url op="view" path=$issue->getBestIssueId()}">
+			{if $issueTitle}
+				{$issueTitle|escape}
+			{else}
+				{$issueSeries|escape}
+			{/if}
+		</a>
+		{if $issueTitle && $issueSeries}
+			<div class="series">
+				{$issueSeries|escape}
+			</div>
 		{/if}
-	</a>
-	{if $issueTitle && $issueSeries}
-		<div class="series">
-			{$issueSeries|escape}
-		</div>
-	{/if}
+	</h2>
 
 	<div class="description">
 		{$issue->getLocalizedDescription()|strip_unsafe_html}

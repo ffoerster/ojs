@@ -3,349 +3,276 @@
 /**
  * @file tests/classes/search/ArticleSearchTest.php
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2000-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2000-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @class ArticleSearchTest
+ *
  * @ingroup tests_classes_search
+ *
  * @see ArticleSearch
  *
  * @brief Test class for the ArticleSearch class
  */
 
-require_mock_env('env1');
+namespace APP\tests\classes\search;
 
-import('lib.pkp.tests.PKPTestCase');
-import('lib.pkp.classes.core.ArrayItemIterator');
-import('classes.search.ArticleSearch');
-import('lib.pkp.classes.core.PKPRouter');
+use APP\core\Application;
+use APP\core\PageRouter;
+use APP\journal\Journal;
+use APP\journal\JournalDAO;
+use APP\search\ArticleSearch;
+use APP\search\ArticleSearchDAO;
+use Mockery;
+use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PKP\db\DAORegistry;
+use PKP\plugins\Hook;
+use PKP\tests\PKPTestCase;
 
-define('SUBMISSION_SEARCH_TEST_DEFAULT_ARTICLE', 1);
-define('SUBMISSION_SEARCH_TEST_ARTICLE_FROM_PLUGIN', 2);
+#[CoversClass(ArticleSearch::class)]
+class ArticleSearchTest extends PKPTestCase
+{
+    private const SUBMISSION_SEARCH_TEST_DEFAULT_ARTICLE = 1;
 
-class ArticleSearchTest extends PKPTestCase {
-	/** @var array */
-	private $_retrieveResultsParams;
+    private array $_retrieveResultsParams;
 
-	//
-	// Implementing protected template methods from PKPTestCase
-	//
-	/**
-	 * @see PKPTestCase::getMockedDAOs()
-	 */
-	protected function getMockedDAOs() {
-		$mockedDaos = parent::getMockedDAOs();
-		$mockedDaos += array(
-			'ArticleSearchDAO', 'ArticleDAO', 'PublishedArticleDAO',
-			'IssueDAO', 'JournalDAO', 'SectionDAO'
-		);
-		return $mockedDaos;
-	}
+    //
+    // Implementing protected template methods from PKPTestCase
+    //
+    /**
+     * @see PKPTestCase::getMockedDAOs()
+     */
+    protected function getMockedDAOs(): array
+    {
+        return [...parent::getMockedDAOs(), 'ArticleSearchDAO', 'JournalDAO'];
+    }
 
-	/**
-	 * @see PKPTestCase::setUp()
-	 */
-	protected function setUp() {
-		parent::setUp();
-		HookRegistry::rememberCalledHooks();
+    /**
+     * @see PKPTestCase::getMockedContainerKeys()
+     */
+    protected function getMockedContainerKeys(): array
+    {
+        return [...parent::getMockedContainerKeys(), \APP\issue\DAO::class];
+    }
 
-		// Prepare the mock environment for this test.
-		$this->registerMockArticleSearchDAO();
-		$this->registerMockArticleDAO();
-		$this->registerMockPublishedArticleDAO();
-		$this->registerMockIssueDAO();
-		$this->registerMockJournalDAO();
-		$this->registerMockSectionDAO();
+    /**
+     * @see PKPTestCase::setUp()
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Hook::rememberCalledHooks();
 
-		$application = PKPApplication::getApplication();
-		$request = $application->getRequest();
-		if (is_null($request->getRouter())) {
-			$router = new PKPRouter();
-			$request->setRouter($router);
-		}
-	}
+        // Prepare the mock environment for this test.
+        $this->registerMockArticleSearchDAO();
+        $this->registerMockJournalDAO();
 
-	/**
-	 * @see PKPTestCase::tearDown()
-	 */
-	protected function tearDown() {
-		HookRegistry::resetCalledHooks();
-		parent::tearDown();
-	}
+        $request = Application::get()->getRequest();
+        if (is_null($request->getRouter())) {
+            $router = new PageRouter();
+            $request->setRouter($router);
+        }
+    }
 
-
-	//
-	// Unit tests
-	//
-	/**
-	 * @covers ArticleSearch
-	 */
-	public function testRetrieveResults() {
-		$this->markTestSkipped(); // Temporarily disabled!
-
-		// Make sure that no hook is being called.
-		HookRegistry::clear('SubmissionSearch::retrieveResults');
-
-		// Test a simple search with a mock database back-end.
-		$journal = new Journal();
-		$keywords = array(null => 'test');
-		$articleSearch = new ArticleSearch();
-		$error = '';
-		$application = PKPApplication::getApplication();
-		$request = $application->getRequest();
-		$searchResult = $articleSearch->retrieveResults($request, $journal, $keywords, $error);
-
-		// Test whether the result from the mocked DAOs is being returned.
-		self::assertInstanceOf('ItemIterator', $searchResult);
-		$firstResult = $searchResult->next();
-		self::assertArrayHasKey('article', $firstResult);
-		self::assertEquals(SUBMISSION_SEARCH_TEST_DEFAULT_ARTICLE, $firstResult['article']->getId());
-		self::assertEquals('', $error);
-
-		// Make sure that articles from unpublished issues will
-		// be filtered out.
-		$this->registerMockIssueDAO(false);
-		$this->registerMockArticleSearchDAO(); // This is necessary to instantiate a fresh iterator.
-		$keywords = array(null => 'test');
-		$searchResult = $articleSearch->retrieveResults($request, $journal, $keywords, $error);
-		self::assertTrue($searchResult->eof());
-	}
-
-	/**
-	 * @covers ArticleSearch
-	 */
-	public function testRetrieveResultsViaPluginHook() {
-		$this->markTestSkipped(); // Temporarily disabled!
-
-		// Diverting a search to the search plugin hook.
-		HookRegistry::register('SubmissionSearch::retrieveResults', array($this, 'callbackRetrieveResults'));
-
-		$testCases = array(
-			array (null => 'query'), // Simple Search - "All"
-			array ('1' => 'author'), // Simple Search - "Authors"
-			array ('2' => 'title'), // Simple Search - "Title"
-			array (
-				null => 'query',
-				1 => 'author',
-				2 => 'title'
-			), // Advanced Search
-		);
-
-		$testFromDate = date('Y-m-d H:i:s', strtotime('2011-03-15 00:00:00'));
-		$testToDate = date('Y-m-d H:i:s', strtotime('2012-03-15 18:30:00'));
-		$error = '';
-
-		$application = PKPApplication::getApplication();
-		$request = $application->getRequest();
-
-		foreach($testCases as $testCase) {
-			// Test a simple search with the simulated callback.
-			$journal = new Journal();
-			$keywords = $testCase;
-			$articleSearch = new ArticleSearch();
-			$searchResult = $articleSearch->retrieveResults($request, $journal, $keywords, $error, $testFromDate, $testToDate);
-
-			// Check the parameters passed into the callback.
-			$expectedPage = 1;
-			$expectedItemsPerPage = 20;
-			$expectedTotalResults = 3;
-			$expectedError = '';
-			$expectedParams = array(
-				$journal, $testCase, $testFromDate, $testToDate,
-				$expectedPage, $expectedItemsPerPage, $expectedTotalResults,
-				$expectedError
-			);
-			self::assertEquals($expectedParams, $this->_retrieveResultsParams);
-
-			// Test and clear the call history of the hook registry.
-			$calledHooks = HookRegistry::getCalledHooks();
-			self::assertEquals('SubmissionSearch::retrieveResults', $calledHooks[0][0]);
-			HookRegistry::resetCalledHooks(true);
-
-			// Test whether the result from the hook is being returned.
-			self::assertInstanceOf('VirtualArrayIterator', $searchResult);
-
-			// Test the total count.
-			self::assertEquals(3, $searchResult->getCount());
-
-			// Test the search result.
-			$firstResult = $searchResult->next();
-			self::assertArrayHasKey('article', $firstResult);
-			self::assertEquals(SUBMISSION_SEARCH_TEST_ARTICLE_FROM_PLUGIN, $firstResult['article']->getId());
-			self::assertEquals('', $error);
-		}
-
-		// Remove the test hook.
-		HookRegistry::clear('SubmissionSearch::retrieveResults');
-	}
+    /**
+     * @see PKPTestCase::tearDown()
+     */
+    protected function tearDown(): void
+    {
+        Hook::resetCalledHooks();
+        parent::tearDown();
+    }
 
 
-	//
-	// Public callback methods
-	//
-	/**
-	 * Simulate a search plug-ins "retrieve results" hook.
-	 * @see SubmissionSearch::retrieveResults()
-	 */
-	public function callbackRetrieveResults($hook, $params) {
-		// Save the test parameters
-		$this->_retrieveResultsParams = $params;
+    //
+    // Unit tests
+    //
 
-		// Test returning count by-ref.
-		$totalCount =& $params[6];
-		$totalCount = 3;
+    public function testRetrieveResults()
+    {
+        // Make sure that no hook is being called.
+        Hook::clear('SubmissionSearch::retrieveResults');
 
-		// Mock a result set and return it.
-		$results = array(
-			3 => SUBMISSION_SEARCH_TEST_ARTICLE_FROM_PLUGIN
-		);
-		return $results;
-	}
+        // Test a simple search with a mock database back-end.
+        $journal = new Journal();
+        $keywords = [null => 'test'];
+        $articleSearch = new ArticleSearch();
+        $error = '';
+        $request = Application::get()->getRequest();
+        $searchResult = $articleSearch->retrieveResults($request, $journal, $keywords, $error);
 
-	/**
-	 * Callback dealing with ArticleDAO::getArticle()
-	 * calls via our mock ArticleDAO.
-	 *
-	 * @see ArticleDAO::getArticle()
-	 */
-	public function callbackGetArticle($articleId, $journalId = null, $useCache = false) {
-		// Create an article instance with the correct id.
-		$article = new Article();
-		$article->setId($articleId);
-		return $article;
-	}
+        // Test whether the result from the mocked DAOs is being returned.
+        self::assertInstanceOf('ItemIterator', $searchResult);
+        $firstResult = $searchResult->next();
+        self::assertArrayHasKey('article', $firstResult);
+        self::assertEquals(self::SUBMISSION_SEARCH_TEST_DEFAULT_ARTICLE, $firstResult['article']->getId());
+        self::assertEquals('', $error);
+
+        // Make sure that articles from unpublished issues will
+        // be filtered out.
+        $issue = new \APP\issue\Issue();
+        $issue->setPublished(false);
+        $issue->setJournalId(1);
+
+        // Setup the mock
+        app()->instance(
+            \APP\issue\DAO::class,
+            Mockery::mock(
+                \APP\issue\DAO::class,
+                fn (MockInterface $mock) => $mock->shouldReceive('get')
+                    ->withAnyArgs()
+                    ->andReturn($issue)
+            )
+        );
+
+        $this->registerMockArticleSearchDAO(); // This is necessary to instantiate a fresh iterator.
+        $keywords = [null => 'test'];
+        $searchResult = $articleSearch->retrieveResults($request, $journal, $keywords, $error);
+        self::assertTrue($searchResult->eof());
+    }
+
+    public function testRetrieveResultsViaPluginHook()
+    {
+        // Diverting a search to the search plugin hook.
+        Hook::add('SubmissionSearch::retrieveResults', $this->callbackRetrieveResults(...));
+
+        $testCases = [
+            [null => 'query'], // Simple Search - "All"
+            ['1' => 'author'], // Simple Search - "Authors"
+            ['2' => 'title'], // Simple Search - "Title"
+            [
+                null => 'query',
+                1 => 'author',
+                2 => 'title'
+            ], // Advanced Search
+        ];
+
+        $testFromDate = date('Y-m-d H:i:s', strtotime('2011-03-15 00:00:00'));
+        $testToDate = date('Y-m-d H:i:s', strtotime('2012-03-15 18:30:00'));
+        $error = '';
+
+        $request = Application::get()->getRequest();
+
+        foreach ($testCases as $testCase) {
+            // Test a simple search with the simulated callback.
+            $journal = new Journal();
+            $keywords = $testCase;
+            $articleSearch = new ArticleSearch();
+            Hook::resetCalledHooks(true);
+            $searchResult = $articleSearch->retrieveResults($request, $journal, $keywords, $error, $testFromDate, $testToDate);
+
+            // Check the parameters passed into the callback.
+            foreach ([
+                $journal, $testCase, $testFromDate, $testToDate, $orderBy = 'score', $orderDir = 'desc',
+                $exclude = [], $page = 1, $itemsPerPage = 20, $totalResults = 3, $error = '',
+                //the last item, the result,  will be checked later on
+            ] as $position => $expected) {
+                self::assertEquals($expected, $this->_retrieveResultsParams[$position]);
+            }
+
+            // Test the call history of the hook registry.
+            $calledHooks = Hook::getCalledHooks();
+            self::assertCount(1, array_filter($calledHooks, fn ($hook) => $hook[0] === 'SubmissionSearch::retrieveResults'));
+
+            // Test whether the result from the hook is being returned.
+            self::assertInstanceOf('VirtualArrayIterator', $searchResult);
+
+            // Test the total count.
+            self::assertEquals(3, $searchResult->getCount());
+
+            // Test the search result.
+            $firstResult = $searchResult->next();
+            self::assertArrayHasKey('article', $firstResult);
+            self::assertEquals(self::SUBMISSION_SEARCH_TEST_DEFAULT_ARTICLE, $firstResult['article']->getId());
+            self::assertEquals('', $error);
+        }
+
+        // Remove the test hook.
+        Hook::clear('SubmissionSearch::retrieveResults');
+    }
 
 
-	//
-	// Private helper methods
-	//
-	/**
-	 * Mock and register an ArticleSearchDAO as a test
-	 * back end for the ArticleSearch class.
-	 */
-	private function registerMockArticleSearchDAO() {
-		// Mock an ArticleSearchDAO.
-		$articleSearchDAO = $this->getMock('ArticleSearchDAO', array('getPhraseResults'), array(), '', false);
+    //
+    // Public callback methods
+    //
+    /**
+     * Simulate a search plug-ins "retrieve results" hook.
+     *
+     * @see SubmissionSearch::retrieveResults()
+     */
+    public function callbackRetrieveResults($hook, $params): bool
+    {
+        // Save the test parameters
+        $this->_retrieveResultsParams = $params;
 
-		// Mock a result set.
-		$searchResult = array(
-			SUBMISSION_SEARCH_TEST_DEFAULT_ARTICLE => array(
-				'count' => 3,
-				'journal_id' => 2,
-				'issuePublicationDate' => '2013-05-01 20:30:00',
-				'publicationDate' => '2013-05-01 20:30:00'
-			)
-		);
+        // Test returning count by-ref.
+        $totalCount = & $params[9];
+        $totalCount = 3;
 
-		// Mock the getPhraseResults() method.
-		$articleSearchDAO->expects($this->any())
-		                 ->method('getPhraseResults')
-		                 ->will($this->returnValue($searchResult));
+        // Mock a result set and return it.
+        $results = & $params[11];
+        $results = [3 => self::SUBMISSION_SEARCH_TEST_DEFAULT_ARTICLE];
+        return true;
+    }
 
-		// Register the mock DAO.
-		DAORegistry::registerDAO('ArticleSearchDAO', $articleSearchDAO);
-	}
 
-	/**
-	 * Mock and register an ArticleDAO as a test
-	 * back end for the ArticleSearch class.
-	 */
-	private function registerMockArticleDAO() {
-		// Mock an ArticleDAO.
-		$articleDAO = $this->getMock('ArticleDAO', array('getArticle'), array(), '', false);
+    //
+    // Private helper methods
+    //
+    /**
+     * Mock and register an ArticleSearchDAO as a test
+     * back end for the ArticleSearch class.
+     */
+    private function registerMockArticleSearchDAO()
+    {
+        // Mock an ArticleSearchDAO.
+        $articleSearchDao = $this->getMockBuilder(ArticleSearchDAO::class)
+            ->onlyMethods(['getPhraseResults'])
+            ->getMock();
 
-		// Mock an article.
-		$article = new Article();
+        // Mock a result set.
+        $searchResult = [
+            self::SUBMISSION_SEARCH_TEST_DEFAULT_ARTICLE => [
+                'count' => 3,
+                'journal_id' => 2,
+                'issuePublicationDate' => '2013-05-01 20:30:00',
+                'publicationDate' => '2013-05-01 20:30:00'
+            ]
+        ];
 
-		// Mock the getArticle() method.
-		$articleDAO->expects($this->any())
-		           ->method('getArticle')
-		           ->will($this->returnCallback(array($this, 'callbackGetArticle')));
+        // Mock the getPhraseResults() method.
+        $articleSearchDao->expects($this->any())
+            ->method('getPhraseResults')
+            ->willReturn($searchResult);
 
-		// Register the mock DAO.
-		DAORegistry::registerDAO('ArticleDAO', $articleDAO);
-	}
+        // Register the mock DAO.
+        DAORegistry::registerDAO('ArticleSearchDAO', $articleSearchDao);
+    }
 
-	/**
-	 * Mock and register an PublishedArticleDAO as a test
-	 * back end for the ArticleSearch class.
-	 */
-	private function registerMockPublishedArticleDAO() {
-		// Mock a PublishedArticleDAO.
-		$publishedArticleDAO = $this->getMock('PublishedArticleDAO', array('getByArticleId'), array(), '', false);
 
-		// Mock a published article.
-		$publishedArticle = new PublishedArticle();
+    /**
+     * Mock and register an JournalDAO as a test
+     * back end for the ArticleSearch class.
+     */
+    private function registerMockJournalDAO()
+    {
+        // Mock a JournalDAO.
+        $journalDao = $this->getMockBuilder(JournalDAO::class)
+            ->onlyMethods(['getById'])
+            ->getMock();
 
-		// Mock the getByArticleId() method.
-		$publishedArticleDAO->expects($this->any())
-		                    ->method('getByArticleId')
-		                    ->will($this->returnValue($publishedArticle));
+        // Mock a journal.
+        $journal = new Journal();
+        $journal->setId(1);
 
-		// Register the mock DAO.
-		DAORegistry::registerDAO('PublishedArticleDAO', $publishedArticleDAO);
-	}
+        // Mock the getById() method.
+        $journalDao->expects($this->any())
+            ->method('getById')
+            ->willReturn($journal);
 
-	/**
-	 * Mock and register an IssueDAO as a test
-	 * back end for the ArticleSearch class.
-	 */
-	private function registerMockIssueDAO($published = true) {
-		// Mock an IssueDAO.
-		$issueDAO = $this->getMock('IssueDAO', array('getById'), array(), '', false);
-
-		// Mock an issue.
-		$issue = $issueDAO->newDataObject();
-		$issue->setPublished($published);
-
-		// Mock the getById() method.
-		$issueDAO->expects($this->any())
-		         ->method('getById')
-		         ->will($this->returnValue($issue));
-
-		// Register the mock DAO.
-		DAORegistry::registerDAO('IssueDAO', $issueDAO);
-	}
-
-	/**
-	 * Mock and register an JournalDAO as a test
-	 * back end for the ArticleSearch class.
-	 */
-	private function registerMockJournalDAO() {
-		// Mock a JournalDAO.
-		$journalDAO = $this->getMock('JournalDAO', array('getById'), array(), '', false);
-
-		// Mock a journal.
-		$journal = new Journal();
-
-		// Mock the getById() method.
-		$journalDAO->expects($this->any())
-		           ->method('getById')
-		           ->will($this->returnValue($journal));
-
-		// Register the mock DAO.
-		DAORegistry::registerDAO('JournalDAO', $journalDAO);
-	}
-
-	/**
-	 * Mock and register an SectionDAO as a test
-	 * back end for the ArticleSearch class.
-	 */
-	private function registerMockSectionDAO() {
-		// Mock a SectionDAO.
-		$sectionDAO = $this->getMock('SectionDAO', array('getSection'), array(), '', false);
-
-		// Mock a section.
-		$section = new Section();
-
-		// Mock the getSection() method.
-		$sectionDAO->expects($this->any())
-		           ->method('getSection')
-		           ->will($this->returnValue($section));
-
-		// Register the mock DAO.
-		DAORegistry::registerDAO('SectionDAO', $sectionDAO);
-	}
+        // Register the mock DAO.
+        DAORegistry::registerDAO('JournalDAO', $journalDao);
+    }
 }
-?>

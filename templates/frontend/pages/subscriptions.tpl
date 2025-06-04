@@ -1,9 +1,9 @@
 {**
  * templates/frontend/pages/subscriptions.tpl
  *
- * Copyright (c) 2013-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2013-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * About the Journal Subscriptions.
  *
@@ -12,10 +12,13 @@
 
 <div class="page page_subscriptions">
 	{include file="frontend/components/breadcrumbs.tpl" currentTitleKey="about.subscriptions"}
+	<h1>
+		{translate key="about.subscriptions"}
+	</h1>
 	{include file="frontend/components/subscriptionContact.tpl"}
 
 	<a name="subscriptionTypes"></a>
-	{if !$individualSubscriptionTypes->wasEmpty()}
+	{if $individualSubscriptionTypes|@count}
 		<div class="subscriptions_institutional">
 			<h3>{translate key="about.subscriptions.individual"}</h3>
 			<p>{translate key="subscriptions.individualDescription"}</p>
@@ -26,7 +29,7 @@
 					<th>{translate key="about.subscriptionTypes.duration"}</th>
 					<th>{translate key="about.subscriptionTypes.cost"}</th>
 				</tr>
-				{iterate from=individualSubscriptionTypes item=subscriptionType}
+				{foreach from=$individualSubscriptionTypes item=subscriptionType}
 					<tr>
 						<td>
 							<div class="subscription_name">
@@ -40,7 +43,7 @@
 						<td>{$subscriptionType->getDurationYearsMonths()|escape}</td>
 						<td>{$subscriptionType->getCost()|string_format:"%.2f"}&nbsp;({$subscriptionType->getCurrencyStringShort()|escape})</td>
 					</tr>
-				{/iterate}
+				{/foreach}
 			</table>
 		</div>
 		{if $isUserLoggedIn}
@@ -52,7 +55,7 @@
 		{/if}
 	{/if}
 
-	{if !$institutionalSubscriptionTypes->wasEmpty()}
+	{if $institutionalSubscriptionTypes|@count}
 		<h3>{translate key="about.subscriptions.institutional"}</h3>
 		<p>{translate key="subscriptions.institutionalDescription"}</p>
 		<table class="cmp_table">
@@ -62,7 +65,7 @@
 				<th>{translate key="about.subscriptionTypes.duration"}</th>
 				<th>{translate key="about.subscriptionTypes.cost"}</th>
 			</tr>
-			{iterate from=institutionalSubscriptionTypes item=subscriptionType}
+			{foreach from=$institutionalSubscriptionTypes item=subscriptionType}
 				<tr>
 					<td>
 						<div class="subscription_name">
@@ -76,7 +79,7 @@
 					<td>{$subscriptionType->getDurationYearsMonths()|escape}</td>
 					<td>{$subscriptionType->getCost()|string_format:"%.2f"}&nbsp;({$subscriptionType->getCurrencyStringShort()|escape})</td>
 				</tr>
-			{/iterate}
+			{/foreach}
 		</table>
 		{if $isUserLoggedIn}
 			<div class="subscriptions_institutional_purchase">

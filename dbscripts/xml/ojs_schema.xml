@@ -4,12 +4,12 @@
 <!--
   * ojs_schema.xml
   *
-  * Copyright (c) 2014-2018 Simon Fraser University
-  * Copyright (c) 2003-2018 John Willinsky
-  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  * Copyright (c) 2014-2021 Simon Fraser University
+  * Copyright (c) 2003-2021 John Willinsky
+  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
   *
   * OJS database schema in XML.
-  *
+  * XML-BASED DESCRIPTORS ARE DEPRECATED AND SHOULD NOT BE EDITED.
   -->
 
 <schema version="0.2">
@@ -64,10 +64,7 @@
 			<NOTNULL/>
 		</field>
 		<field name="setting_value" type="X"/>
-		<field name="setting_type" type="C2" size="6">
-			<NOTNULL/>
-			<descr>(bool|int|float|string|object)</descr>
-		</field>
+		<field name="setting_type" type="C2" size="6"/>
 		<descr>Journal settings.</descr>
 		<index name="journal_settings_journal_id">
 			<col>journal_id</col>
@@ -176,7 +173,7 @@
 			<NOTNULL />
 		</field>
 		<field name="volume" type="I2"/>
-		<field name="number" type="C2" size="10" />
+		<field name="number" type="C2" size="40" />
 		<field name="year" type="I2"/>
 		<field name="published" type="I1">
 			<NOTNULL />
@@ -212,9 +209,13 @@
 		</field>
 		<field name="style_file_name" type="C2" size="90"/>
 		<field name="original_style_file_name" type="C2" size="255"/>
+		<field name="url_path" type="C2" size="64" />
 		<descr>Journal issues.</descr>
 		<index name="issues_journal_id">
 			<col>journal_id</col>
+		</index>
+		<index name="issues_url_path">
+			<col>url_path</col>
 		</index>
 	</table>
 
@@ -272,9 +273,13 @@
 			<NOTNULL/>
 			<DEFAULT VALUE="0"/>
 		</field>
+		<field name="url_path" type="C2" size="64" />
 		<descr>Issue galleys.</descr>
 		<index name="issue_galleys_issue_id">
 			<col>issue_id</col>
+		</index>
+		<index name="issue_galleys_url_path">
+			<col>url_path</col>
 		</index>
 	</table>
 
@@ -431,133 +436,59 @@
 
 	<!--
 	  *
-	  * TABLE submissions
+	  * TABLE publications
 	  *
 	  -->
-	<table name="submissions">
-		<field name="submission_id" type="I8">
+	<table name="publications">
+		<field name="publication_id" type="I8">
 			<KEY />
 			<AUTOINCREMENT />
 		</field>
-		<field name="locale" type="C2" size="14" />
-		<field name="context_id" type="I8">
-			<NOTNULL />
-		</field>
-		<field name="section_id" type="I8" />
-		<field name="language" type="C2" size="10">
-			<DEFAULT VALUE="en"/>
-		</field>
-		<field name="citations" type="X"/>
-		<field name="date_submitted" type="T"/>
-		<field name="last_modified" type="T"/>
-		<field name="date_status_modified" type="T"/>
-		<field name="status" type="I1">
-			<NOTNULL/>
-			<DEFAULT VALUE="1"/>
-		</field>
-		<field name="submission_progress" type="I1">
-			<NOTNULL/>
-			<DEFAULT VALUE="1"/>
-		</field>
-
-		<field name="pages" type="C2" size="255"/>
-		<field name="hide_author" type="I1">
-			<NOTNULL/>
+		<field name="access_status" type="I8">
 			<DEFAULT VALUE="0"/>
 		</field>
-		<field name="stage_id" type="I8">
-			<NOTNULL/>
-			<DEFAULT VALUE="1"/><!-- WORKFLOW_STAGE_ID_SUBMISSION -->
-		</field>
-		<descr>Submissions</descr>
-		<index name="submissions_journal_id">
-			<col>journal_id</col>
-		</index>
-		<index name="submissions_section_id">
-			<col>section_id</col>
-		</index>
-	</table>
-
-	<!--
-	  *
-	  * TABLE submission_settings
-	  *
-	  -->
-	<table name="submission_settings">
-		<field name="submission_id" type="I8">
-			<NOTNULL />
-		</field>
-		<field name="locale" type="C2" size="14">
-			<NOTNULL />
-			<DEFAULT VALUE=""/>
-		</field>
-		<field name="setting_name" type="C2" size="255">
-			<NOTNULL />
-		</field>
-		<field name="setting_value" type="X"/>
-		<field name="setting_type" type="C2" size="6">
-			<NOTNULL/>
-			<descr>(bool|int|float|string|object)</descr>
-		</field>
-		<descr>Submission metadata</descr>
-		<index name="submission_settings_submission_id">
-			<col>submission_id</col>
-		</index>
-		<index name="submission_settings_pkey">
-			<col>submission_id</col>
-			<col>locale</col>
-			<col>setting_name</col>
-			<UNIQUE/>
-		</index>
-	</table>
-
-	<!--
-	  *
-	  * TABLE published_submissions
-	  *
-	  -->
-	<table name="published_submissions">
-		<field name="published_submission_id" type="I8">
-			<KEY />
-			<AUTOINCREMENT/>
-		</field>
-		<field name="submission_id" type="I8">
-			<NOTNULL/>
-		</field>
-		<field name="issue_id" type="I8">
-			<NOTNULL/>
-		</field>
-		<field name="date_published" type="T"/>
+		<field name="date_published" type="D"/>
+		<field name="last_modified" type="T"/>
+		<field name="locale" type="C2" size="14"/>
+		<field name="primary_contact_id" type="I8" />
+		<field name="section_id" type="I8" />
 		<field name="seq" type="F">
 			<NOTNULL/>
 			<DEFAULT VALUE="0"/>
 		</field>
-		<field name="access_status" type="I1">
-			<NOTNULL/>
-			<DEFAULT VALUE="0"/>
+		<field name="submission_id" type="I8">
+			<NOTNULL />
 		</field>
-		<descr>Published submissions</descr>
-		<index name="published_submissions_submission_id">
+		<field name="status" type="I1">
+			<NOTNULL/>
+			<DEFAULT VALUE="1"/><!-- PKPSubmission::STATUS_QUEUED -->
+		</field>
+		<field name="url_path" type="C2" size="64" />
+		<field name="version" type="I8" />
+		<descr>Publications</descr>
+		<index name="publications_submission_id">
 			<col>submission_id</col>
-			<UNIQUE/>
 		</index>
-		<index name="published_submissions_issue_id">
-			<col>issue_id</col>
+		<index name="publications_section_id">
+			<col>section_id</col>
+		</index>
+		<index name="publications_url_path">
+			<col>url_path</col>
 		</index>
 	</table>
 
 	<!--
 	  *
-	  * TABLE submission_galleys
+	  * TABLE publication_galleys
 	  *
 	  -->
-	<table name="submission_galleys">
+	<table name="publication_galleys">
 		<field name="galley_id" type="I8">
 			<KEY />
 			<AUTOINCREMENT/>
 		</field>
 		<field name="locale" type="C2" size="14"/>
-		<field name="submission_id" type="I8">
+		<field name="publication_id" type="I8">
 			<NOTNULL/>
 		</field>
 		<field name="label" type="C2" size="255"/>
@@ -571,18 +502,22 @@
 			<NOTNULL/>
 			<DEFAULT VALUE="0"/>
 		</field>
-		<descr>Submission galleys</descr>
-		<index name="submission_galleys_submission_id">
-			<col>submission_id</col>
+		<field name="url_path" type="C2" size="64" />
+		<descr>Publication galleys</descr>
+		<index name="publication_galleys_publication_id">
+			<col>publication_id</col>
+		</index>
+		<index name="publication_galleys_url_path">
+			<col>url_path</col>
 		</index>
 	</table>
 
 	<!--
 	  *
-	  * TABLE submission_galley_settings
+	  * TABLE publication_galley_settings
 	  *
 	  -->
-	<table name="submission_galley_settings">
+	<table name="publication_galley_settings">
 		<field name="galley_id" type="I8">
 			<NOTNULL />
 		</field>
@@ -594,199 +529,15 @@
 			<NOTNULL />
 		</field>
 		<field name="setting_value" type="X"/>
-		<field name="setting_type" type="C2" size="6">
-			<NOTNULL/>
-			<descr>(bool|int|float|string|object)</descr>
-		</field>
-		<descr>Article galley metadata.</descr>
-		<index name="submission_galley_settings_galley_id">
+		<descr>Galley metadata.</descr>
+		<index name="publication_galley_settings_galley_id">
 			<col>galley_id</col>
 		</index>
-		<index name="submission_galley_settings_pkey">
+		<index name="publication_galley_settings_pkey">
 			<col>galley_id</col>
 			<col>locale</col>
 			<col>setting_name</col>
 			<UNIQUE/>
-		</index>
-	</table>
-
-	<!--
-	 *
-	 * TABLE submission_search_keyword_list
-	 *
-	 -->
-	<table name="submission_search_keyword_list">
-		<field name="keyword_id" type="I8">
-			<KEY />
-			<AUTOINCREMENT/>
-		</field>
-		<field name="keyword_text" type="C2" size="60">
-			<NOTNULL/>
-		</field>
-		<descr>List of all keywords.</descr>
-		<index name="submission_search_keyword_text">
-			<col>keyword_text</col>
-			<UNIQUE/>
-		</index>
-	</table>
-
-	<!--
-	 *
-	 * TABLE submission_search_objects
-	 *
-	 -->
-	<table name="submission_search_objects">
-		<field name="object_id" type="I8">
-			<KEY />
-			<AUTOINCREMENT/>
-		</field>
-		<field name="submission_id" type="I8">
-			<NOTNULL />
-		</field>
-		<field name="type" type="I4">
-			<NOTNULL />
-			<descr>Type of item. E.g., abstract, fulltext, etc.</descr>
-		</field>
-		<field name="assoc_id" type="I8">
-			<descr>Optional ID of an associated record (e.g., a file_id)</descr>
-		</field>
-		<descr>Indexed objects.</descr>
-	</table>
-
-	<!--
-	 *
-	 * TABLE submission_search_object_keywords
-	 *
-	 -->
-	<table name="submission_search_object_keywords">
-		<field name="object_id" type="I8">
-			<NOTNULL />
-		</field>
-		<field name="keyword_id" type="I8">
-			<NOTNULL />
-		</field>
-		<field name="pos" type="I4">
-			<NOTNULL />
-			<descr>Word position of the keyword in the object.</descr>
-		</field>
-		<descr>Keyword occurrences for each indexed object.</descr>
-		<index name="submission_search_object_keywords_keyword_id">
-			<col>keyword_id</col>
-		</index>
-		<index name="submission_search_object_keywords_pkey">
-			<col>object_id</col>
-			<col>pos</col>
-			<UNIQUE />
-		</index>
-	</table>
-
-	<!-- Reading Tools Tables -->
-
-	<!--
-	 *
-	 * TABLE rt_versions
-	 *
-	 -->
-	<table name="rt_versions">
-		<field name="version_id" type="I8">
-			<KEY />
-			<AUTOINCREMENT />
-		</field>
-		<field name="journal_id" type="I8">
-			<NOTNULL/>
-		</field>
-		<field name="version_key" type="C2" size="40">
-			<NOTNULL/>
-		</field>
-		<field name="locale" type="C2" size="14">
-			<DEFAULT VALUE="en_US"/>
-		</field>
-		<field name="title" type="C2" size="120">
-			<NOTNULL/>
-		</field>
-		<field name="description" type="X"/>
-		<descr>Reading Tools versions.</descr>
-		<index name="rt_versions_journal_id">
-			<col>journal_id</col>
-		</index>
-		<index name="rt_versions_version_key">
-			<col>version_key</col>
-		</index>
-	</table>
-
-	<!--
-	 *
-	 * TABLE rt_contexts
-	 *
-	 -->
-	<table name="rt_contexts">
-		<field name="context_id" type="I8">
-			<KEY />
-			<AUTOINCREMENT/>
-		</field>
-		<field name="version_id" type="I8">
-			<NOTNULL/>
-		</field>
-		<field name="title" type="C2" size="120">
-			<NOTNULL/>
-		</field>
-		<field name="abbrev" type="C2" size="32">
-			<NOTNULL/>
-		</field>
-		<field name="description" type="X"/>
-		<field name="cited_by" type="I1">
-			<NOTNULL/>
-			<DEFAULT VALUE="0"/>
-		</field>
-		<field name="author_terms" type="I1">
-			<NOTNULL/>
-			<DEFAULT VALUE="0"/>
-		</field>
-		<field name="define_terms" type="I1">
-			<NOTNULL/>
-			<DEFAULT VALUE="0"/>
-		</field>
-		<field name="geo_terms" type="I1">
-			<NOTNULL/>
-			<DEFAULT VALUE="0"/>
-		</field>
-		<field name="seq" type="F">
-			<NOTNULL/>
-			<DEFAULT VALUE="0"/>
-		</field>
-		<descr>Reading Tools contexts (within versions).</descr>
-		<index name="rt_contexts_version_id">
-			<col>version_id</col>
-		</index>
-	</table>
-
-	<!--
-	 *
-	 * TABLE rt_searches
-	 *
-	 -->
-	<table name="rt_searches">
-		<field name="search_id" type="I8">
-			<KEY />
-			<AUTOINCREMENT/>
-		</field>
-		<field name="context_id" type="I8">
-			<NOTNULL/>
-		</field>
-		<field name="title" type="C2" size="120">
-			<NOTNULL/>
-		</field>
-		<field name="description" type="X"/>
-		<field name="url" type="X"/>
-		<field name="search_url" type="X"/>
-		<field name="search_post" type="X"/>
-		<field name="seq" type="F">
-			<NOTNULL/>
-			<DEFAULT VALUE="0"/>
-		</field>
-		<descr>Reading Tools searches (within contexts).</descr>
-		<index name="rt_searches_context_id">
-			<col>context_id</col>
 		</index>
 	</table>
 

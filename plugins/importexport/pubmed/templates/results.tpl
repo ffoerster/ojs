@@ -1,13 +1,13 @@
 {**
  * plugins/importexport/native/templates/results.tpl
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * List of operations this plugin can perform
  *}
-
+<div class="legacyDefaults">
 {if $validationErrors}
 	<h2>{translate key="plugins.importexport.common.validationErrors"}</h2>
 	<ul>
@@ -42,7 +42,7 @@
 	<ul>
 		{foreach from=$content item=contentItem}
 			<li>
-				{if is_a($contentItem, 'Submission')}
+				{if $contentItem instanceof APP\submission\Submission}
 					{$contentItem->getLocalizedTitle()|strip_unsafe_html}</li>
 				{else}
 					{$contentItem->getIssueIdentification()|escape}
@@ -51,3 +51,4 @@
 		{/foreach}
 	</ul>
 {/if}
+</div>

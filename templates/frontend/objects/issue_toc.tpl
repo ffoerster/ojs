@@ -1,9 +1,9 @@
 {**
  * templates/frontend/objects/issue_toc.tpl
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @brief View of an Issue which displays a full table of contents.
  *
@@ -12,10 +12,22 @@
  * @uses $issueSeries string Vol/No/Year string for the issue
  * @uses $issueGalleys array Galleys for the entire issue
  * @uses $hasAccess bool Can this user access galleys for this context?
- * @uses $publishedArticles array Lists of articles published in this issue
+ * @uses $publishedSubmissions array Lists of articles published in this issue
  *   sorted by section.
  * @uses $primaryGenreIds array List of file genre ids for primary file types
+ * @uses $heading string HTML heading element, default: h2
  *}
+{if !$heading}
+	{assign var="heading" value="h2"}
+{/if}
+{assign var="articleHeading" value="h3"}
+{if $heading == "h3"}
+	{assign var="articleHeading" value="h4"}
+{elseif $heading == "h4"}
+	{assign var="articleHeading" value="h5"}
+{elseif $heading == "h5"}
+	{assign var="articleHeading" value="h6"}
+{/if}
 <div class="obj_issue_toc">
 
 	{* Indicate if this is only a preview *}
@@ -29,9 +41,12 @@
 		{* Issue cover image *}
 		{assign var=issueCover value=$issue->getLocalizedCoverImageUrl()}
 		{if $issueCover}
-			<a class="cover" href="{url op="view" page="issue" path=$issue->getBestIssueId()}">
-				<img src="{$issueCover|escape}"{if $issue->getLocalizedCoverImageAltText() != ''} alt="{$issue->getLocalizedCoverImageAltText()|escape}"{/if}>
-			</a>
+			<div class="cover">
+				{capture assign="defaultAltText"}
+					{translate key="issue.viewIssueIdentification" identification=$issue->getIssueIdentification()|escape}
+				{/capture}
+				<img src="{$issueCover|escape}" alt="{$issue->getLocalizedCoverImageAltText()|escape|default:$defaultAltText}">
+			</div>
 		{/if}
 
 		{* Description *}
@@ -41,19 +56,19 @@
 			</div>
 		{/if}
 
-		{* PUb IDs (eg - DOI) *}
+		{* PUb IDs (eg - URN) *}
 		{foreach from=$pubIdPlugins item=pubIdPlugin}
 			{assign var=pubId value=$issue->getStoredPubId($pubIdPlugin->getPubIdType())}
 			{if $pubId}
-				{assign var="doiUrl" value=$pubIdPlugin->getResolvingURL($currentJournal->getId(), $pubId)|escape}
+				{assign var="resolvingUrl" value=$pubIdPlugin->getResolvingURL($currentJournal->getId(), $pubId)|escape}
 				<div class="pub_id {$pubIdPlugin->getPubIdType()|escape}">
 					<span class="type">
 						{$pubIdPlugin->getPubIdDisplayType()|escape}:
 					</span>
 					<span class="id">
-						{if $doiUrl}
-							<a href="{$doiUrl|escape}">
-								{$doiUrl}
+						{if $resolvingUrl}
+							<a href="{$resolvingUrl|escape}">
+								{$resolvingUrl}
 							</a>
 						{else}
 							{$pubId}
@@ -63,8 +78,24 @@
 			{/if}
 		{/foreach}
 
+		{* DOI *}
+		{assign var=doiObject value=$issue->getData('doiObject')}
+		{if $doiObject}
+			{assign var="doiUrl" value=$doiObject->getData('resolvingUrl')|escape}
+			<div class="pub_id doi">
+				<span class="type">
+					DOI:
+				</span>
+				<span class="id">
+					<a href="{$doiUrl|escape}">
+						{$doiUrl}
+					</a>
+				</span>
+			</div>
+		{/if}
+
 		{* Published date *}
-		{if $issue->getDatePublished()}
+		{if $includeIssuePublishDate && $issue->getDatePublished()}
 			<div class="published">
 				<span class="label">
 					{translate key="submissions.published"}:
@@ -79,13 +110,13 @@
 	{* Full-issue galleys *}
 	{if $issueGalleys}
 		<div class="galleys">
-			<h2>
+			<{$heading} id="issueTocGalleyLabel">
 				{translate key="issue.fullIssue"}
-			</h2>
+			</{$heading}>
 			<ul class="galleys_links">
 				{foreach from=$issueGalleys item=galley}
 					<li>
-						{include file="frontend/objects/galley_link.tpl" parent=$issue purchaseFee=$currentJournal->getSetting('purchaseIssueFee') purchaseCurrency=$currentJournal->getSetting('currency')}
+						{include file="frontend/objects/galley_link.tpl" parent=$issue labelledBy="issueTocGalleyLabel" purchaseFee=$currentJournal->getData('purchaseIssueFee') purchaseCurrency=$currentJournal->getData('currency')}
 					</li>
 				{/foreach}
 			</ul>
@@ -94,18 +125,18 @@
 
 	{* Articles *}
 	<div class="sections">
-	{foreach name=sections from=$publishedArticles item=section}
+	{foreach name=sections from=$publishedSubmissions item=section}
 		<div class="section">
 		{if $section.articles}
 			{if $section.title}
-				<h2>
+				<{$heading}>
 					{$section.title|escape}
-				</h2>
+				</{$heading}>
 			{/if}
 			<ul class="cmp_article_list articles">
 				{foreach from=$section.articles item=article}
 					<li>
-						{include file="frontend/objects/article_summary.tpl"}
+						{include file="frontend/objects/article_summary.tpl" heading=$articleHeading}
 					</li>
 				{/foreach}
 			</ul>

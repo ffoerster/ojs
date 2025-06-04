@@ -7,24 +7,21 @@
 /**
  * @file pages/manageIssues/index.php
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @ingroup pages_editor
+ *
  * @brief Handle requests for issue management functions.
  *
  */
 
 switch ($op) {
-	//
-	// Issue
-	//
-	case 'index':
-	case 'issuesTabs':
-		define('HANDLER_CLASS', 'ManageIssuesHandler');
-		import('pages.manageIssues.ManageIssuesHandler');
-		break;
+    //
+    // Issue
+    //
+    case 'index':
+    case 'issuesTabs':
+        return new APP\pages\manageIssues\ManageIssuesHandler();
 }
-
-?>

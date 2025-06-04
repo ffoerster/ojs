@@ -3,9 +3,9 @@
 <!--
   * registry/navigationMenus.xml
   *
-  * Copyright (c) 2014-2018 Simon Fraser University
-  * Copyright (c) 2003-2018 John Willinsky
-  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  * Copyright (c) 2014-2021 Simon Fraser University
+  * Copyright (c) 2003-2021 John Willinsky
+  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
   *
   * Default NavigationMenus XML file.
   *
@@ -31,8 +31,9 @@
 		<navigationMenuItem title="manager.announcements" type="NMI_TYPE_ANNOUNCEMENTS" />
 		<navigationMenuItem title="navigation.about" type="NMI_TYPE_ABOUT">
 			<navigationMenuItem title="about.aboutContext" type="NMI_TYPE_ABOUT" />
-			<navigationMenuItem title="navigation.submissions" type="NMI_TYPE_SUBMISSIONS" />
-			<navigationMenuItem title="about.editorialTeam" type="NMI_TYPE_EDITORIAL_TEAM" />
+			<navigationMenuItem title="about.submissions" type="NMI_TYPE_SUBMISSIONS" />
+			<navigationMenuItem title="common.editorialMasthead" type="NMI_TYPE_MASTHEAD" />
+			<navigationMenuItem title="manager.setup.privacyStatement" type="NMI_TYPE_PRIVACY" />
 			<navigationMenuItem title="about.contact" type="NMI_TYPE_CONTACT" />
 		</navigationMenuItem>
 	</navigationMenu>

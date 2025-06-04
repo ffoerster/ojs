@@ -1,0 +1,100 @@
+# Petra Cacic <petracacic3@gmail.com>, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-11-19T11:06:08+00:00\n"
+"PO-Revision-Date: 2025-05-21 16:34+0000\n"
+"Last-Translator: Petra Cacic <petracacic3@gmail.com>\n"
+"Language-Team: Croatian <http://translate.pkp.sfu.ca/projects/ojs/"
+"reports-counter/hr/>\n"
+"Language: hr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 4.18.2\n"
+
+msgid "plugins.reports.counter.description"
+msgstr ""
+"Dodatak COUNTER omogućuje izvještavanje o aktivnosti časopisa, koristeći <a "
+"href=\"https://www.projectcounter.org\">COUNTER standard</a>. Sami ti "
+"izvještaji ne čine časopis usklađenim s COUNTER standardom. Za pružanje "
+"usklađenosti s COUNTER-om, pregledajte zahtjeve na web-stranici Project "
+"COUNTER."
+
+msgid "plugins.reports.counter"
+msgstr "COUNTER statistike"
+
+msgid "plugins.reports.counter.release"
+msgstr "COUNTER Statistike"
+
+msgid "plugins.reports.counter.error.badParameters"
+msgstr "Parametri izvješća nisu bili važeći."
+
+msgid "plugins.reports.counter.error.badRequest"
+msgstr "Zahtjev za izvješće nije važeći."
+
+msgid "plugins.reports.counter.error.noResults"
+msgstr "Za ovo izvješće nisu pronađeni rezultati."
+
+msgid "plugins.reports.counter.error.noXML"
+msgstr "Rezultati se nisu mogli formatirati kao XML."
+
+msgid "plugins.reports.counter.1a.name"
+msgstr "COUNTER Izvješće JR1 (R3)"
+
+msgid "plugins.reports.counter.1a.description"
+msgstr ""
+"Izvješće COUNTER Journal 1 (R3): Zahtjevi za članke u punom tekstu po "
+"mjesecu i časopisu"
+
+msgid "plugins.reports.counter.allCustomers"
+msgstr "Svi kupci"
+
+msgid "plugins.reports.counter.ar1.title"
+msgstr "Izvješće o članku 1"
+
+msgid "plugins.reports.counter.jr1.title"
+msgstr "Izvješće časopisa 1"
+
+#~ msgid "plugins.reports.counter.clearLog"
+#~ msgstr "Izbriši evidenciju"
+
+#~ msgid "plugins.reports.counter.confirmClear"
+#~ msgstr ""
+#~ "Želite li sigurno izbrisati evidenciju? Ovaj postupak se ne može opozvati."
+
+#~ msgid "plugins.reports.counter.browseLog"
+#~ msgstr "Pregledaj evidenciju"
+
+#~ msgid "plugins.reports.counter.browseLog.logBrowser"
+#~ msgstr "Preglednik evidencije"
+
+#~ msgid "plugins.reports.counter.entry.timestamp"
+#~ msgstr "Vrijeme"
+
+#~ msgid "plugins.reports.counter.entry.site"
+#~ msgstr "Stranica"
+
+#~ msgid "plugins.reports.counter.entry.journal"
+#~ msgstr "Časopis"
+
+#~ msgid "plugins.reports.counter.entry.user"
+#~ msgstr "Korisnik"
+
+#~ msgid "plugins.reports.counter.sessionNumber"
+#~ msgstr "Sesija #{$sessionNumber}"
+
+#~ msgid "plugins.reports.counter.entry.type"
+#~ msgstr "Tip"
+
+#~ msgid "plugins.reports.counter.entry.type.article"
+#~ msgstr "Članak"
+
+#~ msgid "plugins.reports.counter.entry.type.search"
+#~ msgstr "Pretraživanje"
+
+#~ msgid "plugins.reports.counter.entry.value"
+#~ msgstr "Vrijednost"

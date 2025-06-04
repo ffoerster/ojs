@@ -1,9 +1,9 @@
 {**
  * plugins/pubIds/urn/templates/urnSuffixEdit.tpl
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * Edit custom URN suffix for an object (issue, submission, file)
  *
@@ -27,8 +27,8 @@
 				{/fbvFormSection}
 				{if $canBeAssigned}
 					<p class="pkp_help">{translate key="plugins.pubIds.urn.editor.canBeAssigned"}</p>
-					{assign var=templatePath value=$pubIdPlugin->getTemplatePath()}
-					{include file="`$templatePath`urnAssignCheckBox.tpl" pubId="" pubObjectType=$pubObjectType}
+					{assign var=templatePath value=$pubIdPlugin->getTemplateResource('urnAssignCheckBox.tpl')}
+					{include file=$templatePath pubId="" pubObjectType=$pubObjectType}
 				{else}
 					<p class="pkp_help">{translate key="plugins.pubIds.urn.editor.customSuffixMissing"}</p>
 				{/if}
@@ -45,8 +45,8 @@
 			<p>{$pubIdPlugin->getPubId($pubObject)|escape}</p>
 			{if $canBeAssigned}
 				<p class="pkp_help">{translate key="plugins.pubIds.urn.editor.canBeAssigned"}</p>
-				{assign var=templatePath value=$pubIdPlugin->getTemplatePath()}
-				{include file="`$templatePath`urnAssignCheckBox.tpl" pubId="" pubObjectType=$pubObjectType}
+				{assign var=templatePath value=$pubIdPlugin->getTemplateResource('urnAssignCheckBox.tpl')}
+				{include file=$templatePath pubId="" pubObjectType=$pubObjectType}
 			{else}
 				<p class="pkp_help">{translate key="plugins.pubIds.urn.editor.patternNotResolved"}</p>
 			{/if}
@@ -55,9 +55,9 @@
 {/if}
 {* issue pub object *}
 {if $pubObjectType == 'Issue'}
-	{assign var=enableSubmissionURN value=$pubIdPlugin->getSetting($currentContext->getId(), "enableSubmissionURN")}
+	{assign var=enablePublicationURN value=$pubIdPlugin->getSetting($currentContext->getId(), "enablePublicationURN")}
 	{assign var=enableRepresentationURN value=$pubIdPlugin->getSetting($currentContext->getId(), "enableRepresentationURN")}
-	{if $enableSubmissionURN || $enableRepresentationURN}
+	{if $enablePublicationURN || $enableRepresentationURN}
 		{if !$formArea}
 			{assign var="formAreaTitle" value="plugins.pubIds.urn.editor.urn"}
 		{else}

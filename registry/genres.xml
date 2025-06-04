@@ -4,19 +4,19 @@
 <!--
   * registry/genres.xml
   *
-  * Copyright (c) 2014-2018 Simon Fraser University
-  * Copyright (c) 2003-2018 John Willinsky
-  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  * Copyright (c) 2014-2021 Simon Fraser University
+  * Copyright (c) 2003-2021 John Willinsky
+  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
   *
   * Default genres XML file.
   * N.B. The "category" attribute's value can be:
   *  1 => GENRE_CATEGORY_DOCUMENT
   *  2 => GENRE_CATEGORY_ARTWORK
   *  3 => GENRE_CATEGORY_SUPPLEMENTARY
-  * These are defined in lib/pkp/classes/submission/Genre.inc.php.
+  * These are defined in lib/pkp/classes/submission/Genre.php.
   -->
 <genres>
-	<genre key="SUBMISSION" category="1" dependent="0" supplementary="0" localeKey="default.genres.article" />
+	<genre key="SUBMISSION" category="1" dependent="0" supplementary="0" required="1" localeKey="default.genres.article" />
 	<genre key="RESEARCHINSTRUMENT" category="3" dependent="0" supplementary="1" localeKey="default.genres.researchInstrument" />
 	<genre key="RESEARCHMATERIALS" category="3" dependent="0" supplementary="1" localeKey="default.genres.researchMaterials" />
 	<genre key="RESEARCHRESULTS" category="3" dependent="0" supplementary="1" localeKey="default.genres.researchResults" />

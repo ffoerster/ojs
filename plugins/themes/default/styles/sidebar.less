@@ -1,9 +1,9 @@
 /**
  * @file plugins/themes/default/styles/sidebar.less
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @brief Styles for the sidebar blocks
  *
@@ -17,6 +17,7 @@
 	.title {
 		display: block;
 		margin-bottom: @base;
+		margin-top: 0;
 		font-family: @font-heading;
 		font-size: @font-bump;
 		font-weight: @bold;
@@ -54,6 +55,35 @@
 
 	@media(min-width: @screen-desktop) {
 		padding: @triple;
+	}
+}
+
+// Browse sidebar block
+.block_browse {
+	font-size: @font-sml;
+
+	.has_submenu {
+		margin-top: @double;
+		font-size: @font-sml;
+		font-weight: @bold;
+		color: @text-light;
+
+		ul {
+			margin-top: calc(~"@{half} - 1px"); // account for border
+			padding-top: @half;
+			font-weight: @normal;
+		}
+	}
+
+	.is_sub {
+		margin-left: @base;
+	}
+
+	.current a {
+		padding-left: 0.5em;
+		border-left: 4px solid @bg-border-color;
+		color: @text-light;
+		cursor: text;
 	}
 }
 

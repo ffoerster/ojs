@@ -1,9 +1,9 @@
 {**
  * templates/frontend/pages/userSubscriptions.tpl
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @brief Page where users can view and manage their subscriptions.
  *
@@ -19,6 +19,9 @@
 
 <div class="page page_user_subscriptions">
 	{include file="frontend/components/breadcrumbs.tpl" currentTitleKey="user.subscriptions.mySubscriptions"}
+	<h1>
+		{translate key="user.subscriptions.mySubscriptions"}
+	</h1>
 	{include file="frontend/components/subscriptionContact.tpl"}
 
 	{if $paymentsEnabled}
@@ -68,15 +71,15 @@
 						<td>
 							{assign var="subscriptionStatus" value=$userIndividualSubscription->getStatus()}
 							{assign var="isNonExpiring" value=$userIndividualSubscription->isNonExpiring()}
-							{if $paymentsEnabled && $subscriptionStatus == $smarty.const.SUBSCRIPTION_STATUS_AWAITING_ONLINE_PAYMENT}
+							{if $paymentsEnabled && $subscriptionStatus == \APP\subscription\Subscription::SUBSCRIPTION_STATUS_AWAITING_ONLINE_PAYMENT}
 								<span class="subscription_disabled">
 									{translate key="subscriptions.status.awaitingOnlinePayment"}
 								</span>
-							{elseif $paymentsEnabled && $subscriptionStatus == $smarty.const.SUBSCRIPTION_STATUS_AWAITING_MANUAL_PAYMENT}
+							{elseif $paymentsEnabled && $subscriptionStatus == \APP\subscription\Subscription::SUBSCRIPTION_STATUS_AWAITING_MANUAL_PAYMENT}
 								<span class="subscription_disabled">
 									{translate key="subscriptions.status.awaitingManualPayment"}
 								</span>
-							{elseif $subscriptionStatus != $smarty.const.SUBSCRIPTION_STATUS_ACTIVE}
+							{elseif $subscriptionStatus != \APP\subscription\Subscription::SUBSCRIPTION_STATUS_ACTIVE}
 								<span class="subscription_disabled">
 									{translate key="subscriptions.inactive"}
 								</span>
@@ -99,11 +102,11 @@
 						</td>
 						{if $paymentsEnabled}
 							<td>
-								{if $subscriptionStatus == $smarty.const.SUBSCRIPTION_STATUS_AWAITING_ONLINE_PAYMENT}
+								{if $subscriptionStatus == \APP\subscription\Subscription::SUBSCRIPTION_STATUS_AWAITING_ONLINE_PAYMENT}
 									<a class="cmp_button" href="{url op="completePurchaseSubscription" path="individual"|to_array:$userIndividualSubscription->getId()}">
 										{translate key="user.subscriptions.purchase"}
 									</a>
-								{elseif $subscriptionStatus == $smarty.const.SUBSCRIPTION_STATUS_ACTIVE}
+								{elseif $subscriptionStatus == \APP\subscription\Subscription::SUBSCRIPTION_STATUS_ACTIVE}
 									{if !$isNonExpiring}
 										<a class="cmp_button" href="{url op="payRenewSubscription" path="individual"|to_array:$userIndividualSubscription->getId()}">
 											{translate key="user.subscriptions.renew"}
@@ -155,23 +158,23 @@
 					{iterate from=userInstitutionalSubscriptions item=userInstitutionalSubscription}
 						<tr>
 							<td>{$userInstitutionalSubscription->getSubscriptionTypeName()|escape}</td>
-							<td>{$userInstitutionalSubscription->getInstitutionName()|escape}</td>
+							<td>{$institutions[$userInstitutionalSubscription->getId()]->getLocalizedName()|escape}</td>
 							<td>
 								{assign var="subscriptionStatus" value=$userInstitutionalSubscription->getStatus()}
 								{assign var="isNonExpiring" value=$userInstitutionalSubscription->isNonExpiring()}
-								{if $paymentsEnabled && $subscriptionStatus == $smarty.const.SUBSCRIPTION_STATUS_AWAITING_ONLINE_PAYMENT}
+								{if $paymentsEnabled && $subscriptionStatus == \APP\subscription\Subscription::SUBSCRIPTION_STATUS_AWAITING_ONLINE_PAYMENT}
 									<span class="subscription_disabled">
 										{translate key="subscriptions.status.awaitingOnlinePayment"}
 									</span>
-								{elseif $paymentsEnabled && $subscriptionStatus == $smarty.const.SUBSCRIPTION_STATUS_AWAITING_MANUAL_PAYMENT}
+								{elseif $paymentsEnabled && $subscriptionStatus == \APP\subscription\Subscription::SUBSCRIPTION_STATUS_AWAITING_MANUAL_PAYMENT}
 									<span class="subscription_disabled">
 										{translate key="subscriptions.status.awaitingManualPayment"}
 									</span>
-								{elseif $paymentsEnabled && $subscriptionStatus == $smarty.const.SUBSCRIPTION_STATUS_NEEDS_APPROVAL}
+								{elseif $paymentsEnabled && $subscriptionStatus == \APP\subscription\Subscription::SUBSCRIPTION_STATUS_NEEDS_APPROVAL}
 									<span class="subscription_disabled">
 										{translate key="subscriptions.status.needsApproval"}
 									</span>
-								{elseif $subscriptionStatus != $smarty.const.SUBSCRIPTION_STATUS_ACTIVE}
+								{elseif $subscriptionStatus != \APP\subscription\Subscription::SUBSCRIPTION_STATUS_ACTIVE}
 									<span class="subscription_disabled">
 										{translate key="subscriptions.inactive"}
 									</span>
@@ -196,11 +199,11 @@
 							</td>
 							{if $paymentsEnabled}
 								<td>
-									{if $subscriptionStatus == $smarty.const.SUBSCRIPTION_STATUS_AWAITING_ONLINE_PAYMENT}
+									{if $subscriptionStatus == \APP\subscription\Subscription::SUBSCRIPTION_STATUS_AWAITING_ONLINE_PAYMENT}
 										<a class="cmp_button" href="{url op="completePurchaseSubscription" path="institutional"|to_array:$userInstitutionalSubscription->getId()}">
 											{translate key="user.subscriptions.purchase"}
 										</a>
-									{elseif $subscriptionStatus == $smarty.const.SUBSCRIPTION_STATUS_ACTIVE}
+									{elseif $subscriptionStatus == \APP\subscription\Subscription::SUBSCRIPTION_STATUS_ACTIVE}
 										{if !$isNonExpiring}
 											<a class="cmp_button" href="{url op="payRenewSubscription" path="institutional"|to_array:$userInstitutionalSubscription->getId()}">
 												{translate key="user.subscriptions.renew"}

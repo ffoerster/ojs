@@ -1,9 +1,9 @@
 /**
  * @file styles/objects/article_details.less
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @brief Styles applying to a view of an article with all details
  * @link templates/frontend/objects/article_details.tpl
@@ -16,7 +16,7 @@
 
 	> .subtitle {
 		margin: 0;
-		font-size: @font-lead;
+		font-size: @font-base;
 		line-height: @line-lead;
 		font-weight: @normal;
 	}
@@ -35,6 +35,10 @@
 
 		> *:last-child {
 			margin-bottom: 0;
+		}
+
+		> h2 + p {
+			margin-top: 0;
 		}
 	}
 
@@ -55,6 +59,12 @@
 				font-family: @font-heading;
 				font-size: @font-bump;
 				font-weight: @bold;
+			}
+
+			&.doi .label,
+			&.keywords .label {
+				display: inline;
+				font-size: @font-base;
 			}
 		}
 
@@ -79,9 +89,12 @@
 			display: block;
 		}
 
+		.userGroup {
+			display: block;
+		}
 		.orcid {
 			display: block;
-			font-size: @font-tiny;
+			font-size: @font-sml;
 			line-height: @double;
 
 			a {
@@ -97,6 +110,14 @@
 		.affiliation {
 			font-size: @font-sml;
 			color: @text-light;
+		}
+
+		.affiliation a,
+		.affiliation span,
+		.affiliation svg
+		{
+			display: inline-block;
+			vertical-align: middle;
 		}
 	}
 
@@ -117,17 +138,16 @@
 	.item.doi,
 	.item.keywords {
 		padding-top: 0;
-
-		.label {
-			font-size: @font-sml;
-		}
 	}
 
 	.galleys_links {
 		&:extend(.pkp_unstyled_list);
+		display: flex;
+		flex-flow: row nowrap;
+		justify-content: start;
 
 		li {
-			display: inline-block;
+			margin-inline-end: 1rem;
 		}
 	}
 
@@ -160,6 +180,7 @@
 			}
 
 			.label {
+				margin: 0;
 				font-family: @font-heading;
 				font-size: @font-sml;
 				font-weight: @normal;
@@ -168,10 +189,20 @@
 		}
 	}
 
+	.categories {
+		.pkp_unstyled_list;
+	}
+
+	.versions ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
 	.citation_display {
 
 		.value {
-			font-size: @font-tiny;
+			font-size: @font-sml;
 		}
 
 		// Hide the bibliography number produced by some CSL styles
@@ -284,6 +315,19 @@
 
 		.item {
 			padding: @double;
+
+			.label {
+				margin: 0 0 @double;
+				font-family: @font-heading;
+				font-size: @font-bump;
+				font-weight: @bold;
+			}
+
+			&.doi .label,
+			&.keywords .label {
+				display: inline;
+				font-size: @font-base;
+			}
 		}
 
 		.entry_details {

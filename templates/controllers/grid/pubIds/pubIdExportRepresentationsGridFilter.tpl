@@ -1,9 +1,9 @@
 {**
  * templates/controllers/grid/pubIds/pubIdExportRepresentationsGridFilter.tpl
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2000-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2000-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * Filter template for representations lists.
  *}
@@ -20,7 +20,7 @@
 	{fbvFormArea id="representationSearchFormArea"|concat:$filterData.gridId}
 		{fbvFormSection}
 			{fbvElement type="select" name="column" id="column"|concat:$filterData.gridId from=$filterData.columns selected=$filterSelectionData.column size=$fbvStyles.size.SMALL translate=false inline="true"}
-			{fbvElement type="text" name="search" id="search"|concat:$filterData.gridId value=$filterSelectionData.search size=$fbvStyles.size.MEDIUM inline="true"}
+			{fbvElement type="search" name="search" id="search"|concat:$filterData.gridId value=$filterSelectionData.search size=$fbvStyles.size.MEDIUM inline="true"}
 		{/fbvFormSection}
 		{fbvFormSection}
 			{fbvElement type="select" name="issueId" id="issueId"|concat:$filterData.gridId from=$filterData.issues selected=$filterSelectionData.issueId size=$fbvStyles.size.SMALL translate=false inline="true"}

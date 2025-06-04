@@ -1,9 +1,9 @@
 {**
  * plugins/generic/announcementFeed/templates/atom.tpl
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * Atom feed template
  *
@@ -23,11 +23,11 @@
 	{* optional elements *}
 	{* <category/> *}
 	{* <contributor/> *}
-	<generator uri="http://pkp.sfu.ca/ojs/" version="{$ojsVersion|escape}">Open Journal Systems</generator>
+	<generator uri="https://pkp.sfu.ca/ojs/" version="{$ojsVersion|escape}">Open Journal Systems</generator>
 	{if $journal->getLocalizedDescription()}
 		{assign var="description" value=$journal->getLocalizedDescription()}
-	{elseif $journal->getLocalizedSetting('searchDescription')}
-		{assign var="description" value=$journal->getLocalizedSetting('searchDescription')}
+	{elseif $journal->getLocalizedData('searchDescription')}
+		{assign var="description" value=$journal->getLocalizedData('searchDescription')}
 	{/if}
 	{if $description}
 	<subtitle>{$description|strip|escape:"html"}</subtitle>
@@ -36,21 +36,21 @@
 {foreach from=$announcements item=announcement}
 	<entry>
 		{* required elements *}
-		<id>{url page="announcement" op="view" path=$announcement->getId()}</id>
-		<title>{$announcement->getLocalizedTitleFull()|strip|escape:"html"}</title>
-		<updated>{$announcement->getDatetimePosted()|date_format:"%Y-%m-%dT%T%z"|regex_replace:"/00$/":":00"}</updated>
+		<id>{url page="announcement" op="view" path=$announcement->id}</id>
+		<title>{$announcement->getLocalizedData('fullTitle')|strip|escape:"html"}</title>
+		<updated>{$announcement->datePosted->format("%Y-%m-%dT%T%z")|regex_replace:"/00$/":":00"}</updated>
 	  	<author>
 			<name>{$journal->getLocalizedName()|strip|escape:"html"}</name>
         </author>
-		<link rel="alternate" href="{url page="announcement" op="view" path=$announcement->getId()}" />
-        {if $announcement->getLocalizedDescription()}
-		<summary type="html" xml:base="{url page="announcement" op="view" path=$announcement->getId()}">{$announcement->getLocalizedDescription()|strip|escape:"html"}</summary>
+		<link rel="alternate" href="{url page="announcement" op="view" path=$announcement->id}" />
+        {if $announcement->getLocalizedData('description')}
+		<summary type="html" xml:base="{url page="announcement" op="view" path=$announcement->id}">{$announcement->getLocalizedData('description')|strip|escape:"html"}</summary>
         {/if}
 
 		{* optional elements *}
 		{* <category/> *}
 		{* <contributor/> *}
-		<published>{$announcement->getDatetimePosted()|date_format:"%Y-%m-%dT%T%z"|regex_replace:"/00$/":":00"}</published>
+		<published>{$announcement->datePosted->format("%Y-%m-%dT%T%z")|regex_replace:"/00$/":":00"}</published>
 		{* <source/> *}
 		{* <rights/> *}
 	</entry>

@@ -1,22 +1,14 @@
 /**
  * @file styles/objects/issue_toc.less
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @brief Styles applying to an issue table of contents view
  * @link templates/frontend/objects/issue_toc.tpl
  */
 .obj_issue_toc {
-
-	h3 {
-		display: inline-block;
-		margin-top: @double * 2;
-		border-bottom: 2px solid @text;
-		font-size: @font-base;
-		line-height: @double - 2; // Adjust for border
-	}
 
 	.cover {
 		display: block;
@@ -56,21 +48,17 @@
 		}
 	}
 
-	.articles,
-	.galleys_links {
+	.articles {
 		&:extend(.pkp_unstyled_list);
+
+		// Prevent articles from moving up into section divider
+		// if the title of a section is omitted from the table of contents
+		margin-top: calc(~"@{triple} + @{double}");
 	}
 
-	.galleys_links {
-
-		li {
-			display: inline-block;
-			margin-right: 1em;
-
-			&:last-child {
-				margin-right: 0;
-			}
-		}
+	h2 + .articles,
+	h3 + .articles {
+		margin-top: 0;
 	}
 
 	.sections:not(:first-child) {
@@ -79,6 +67,22 @@
 
 	.section:last-child .articles > li:last-child {
 		margin-bottom: 0;
+	}
+
+	.galleys_links {
+		&:extend(.pkp_unstyled_list);
+		margin-top: @base;
+		display: flex;
+		flex-flow: row nowrap;
+		justify-content: start;
+
+		li {
+			margin-inline-end: 1rem;
+
+			&:last-child {
+				margin-inline-end: 0;
+			}
+		}
 	}
 
 	@media(min-width: @screen-tablet) {
@@ -110,7 +114,8 @@
 				border-top: @bg-border;
 			}
 
-			h2 {
+			> h2,
+			> h3 {
 				display: inline-block;
 				position: relative;
 				left: -15px;
@@ -119,6 +124,7 @@
 				background: @lift;
 				font-size: @font-bump;
 				font-weight: @normal;
+				line-height: @triple;
 				color: @text-light;
 			}
 		}

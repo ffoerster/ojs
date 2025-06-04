@@ -1,9 +1,9 @@
 {**
  * plugins/pubIds/urn/templates/settingsForm.tpl
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * URN plugin settings
  *
@@ -18,14 +18,14 @@
 		$('#urnSettingsForm').pkpHandler('$.pkp.plugins.pubIds.urn.js.URNSettingsFormHandler');
 	{rdelim});
 </script>
-<form class="pkp_form" id="urnSettingsForm" method="post" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" category="pubIds" plugin=$pluginName verb="save"}">
+<form class="pkp_form" id="urnSettingsForm" method="post" action="{url router=PKP\core\PKPApplication::ROUTE_COMPONENT op="manage" category="pubIds" plugin=$pluginName verb="save"}">
 	{csrf}
 	{include file="common/formErrors.tpl"}
 	{fbvFormArea id="urnObjectsFormArea" title="plugins.pubIds.urn.manager.settings.urnObjects"}
 		<p class="pkp_help">{translate key="plugins.pubIds.urn.manager.settings.explainURNs"}</p>
 		{fbvFormSection list="true"}
 			{fbvElement type="checkbox" label="plugins.pubIds.urn.manager.settings.enableIssueURN" id="enableIssueURN" maxlength="40" checked=$enableIssueURN|compare:true}
-			{fbvElement type="checkbox" label="plugins.pubIds.urn.manager.settings.enableSubmissionURN" id="enableSubmissionURN" maxlength="40" checked=$enableSubmissionURN|compare:true}
+			{fbvElement type="checkbox" label="plugins.pubIds.urn.manager.settings.enablePublicationURN" id="enablePublicationURN" maxlength="40" checked=$enablePublicationURN|compare:true}
 			{fbvElement type="checkbox" label="plugins.pubIds.urn.manager.settings.enableRepresentationURN" id="enableRepresentationURN" maxlength="40" checked=$enableRepresentationURN|compare:true}
 		{/fbvFormSection}
 	{/fbvFormArea}
@@ -51,9 +51,9 @@
 		{/fbvFormSection}
 		{fbvFormSection list="true"}
 			{fbvElement type="radio" id="urnSuffixPattern" name="urnSuffix" value="pattern" label="plugins.pubIds.urn.manager.settings.urnSuffixPattern" checked=$urnSuffix|compare:"pattern"}
-			<p class="pkp_help">{translate key="plugins.pubIds.urn.manager.settings.urnSuffixPattern.example"}</p>
+			<div><p class="pkp_help">{translate key="plugins.pubIds.urn.manager.settings.urnSuffixPattern.example"}</p></div>
 			{fbvElement type="text" label="plugins.pubIds.urn.manager.settings.urnSuffixPattern.issues" id="urnIssueSuffixPattern" value=$urnIssueSuffixPattern maxlength="40" inline=true size=$fbvStyles.size.MEDIUM}
-			{fbvElement type="text" label="plugins.pubIds.urn.manager.settings.urnSuffixPattern.submissions" id="urnSubmissionSuffixPattern" value=$urnSubmissionSuffixPattern maxlength="40" inline=true size=$fbvStyles.size.MEDIUM}
+			{fbvElement type="text" label="plugins.pubIds.urn.manager.settings.urnSuffixPattern.submissions" id="urnPublicationSuffixPattern" value=$urnPublicationSuffixPattern maxlength="40" inline=true size=$fbvStyles.size.MEDIUM}
 			{fbvElement type="text" label="plugins.pubIds.urn.manager.settings.urnSuffixPattern.representations" id="urnRepresentationSuffixPattern" value=$urnRepresentationSuffixPattern maxlength="40" inline=true size=$fbvStyles.size.MEDIUM}
 		{/fbvFormSection}
 	{/fbvFormArea}

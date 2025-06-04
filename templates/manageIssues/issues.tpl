@@ -1,18 +1,27 @@
 {**
  * templates/manageIssues/issues.tpl
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * The issue management page.
  *}
-{strip}
-{assign var="pageTitle" value="editor.navigation.issues"}
-{include file="common/header.tpl"}
-{/strip}
+{extends file="layouts/backend.tpl"}
 
-{include file="manageIssues/issuesTabs.tpl"}
+{block name="page"}
+	<h1 class="app__pageHeading">
+		{translate key="editor.navigation.issues"}
+	</h1>
 
-
-{include file="common/footer.tpl"}
+	<tabs :track-history="true">
+		<tab id="future" label="{translate key="editor.navigation.futureIssues"}">
+			{capture assign=futureIssuesGridUrl}{url router=PKP\core\PKPApplication::ROUTE_COMPONENT component="grid.issues.FutureIssueGridHandler" op="fetchGrid" escape=false}{/capture}
+			{load_url_in_div id="futureIssuesGridContainer" url=$futureIssuesGridUrl}
+		</tab>
+		<tab id="back" label="{translate key="editor.navigation.issueArchive"}">
+			{capture assign=backIssuesGridUrl}{url router=PKP\core\PKPApplication::ROUTE_COMPONENT component="grid.issues.BackIssueGridHandler" op="fetchGrid" escape=false}{/capture}
+			{load_url_in_div id="backIssuesGridContainer" url=$backIssuesGridUrl}
+		</tab>
+	</tabs>
+{/block}

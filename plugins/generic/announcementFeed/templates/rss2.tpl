@@ -1,9 +1,9 @@
 {**
  * plugins/generic/announcementFeed/templates/rss2.tpl
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2025 Simon Fraser University
+ * Copyright (c) 2003-2025 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * RSS 2 feed template
  *
@@ -16,16 +16,16 @@
 		<link>{url journal=$journal->getPath()}</link>
 		{if $journal->getLocalizedDescription()}
 			{assign var="description" value=$journal->getLocalizedDescription()}
-		{elseif $journal->getLocalizedSetting('searchDescription')}
-			{assign var="description" value=$journal->getLocalizedSetting('searchDescription')}
+		{elseif $journal->getLocalizedData('searchDescription')}
+			{assign var="description" value=$journal->getLocalizedData('searchDescription')}
 		{/if}
 		<description>{$description|strip|escape:"html"}</description>
 
 		{* optional elements *}
-		{if $journal->getPrimaryLocale()}
-			<language>{$journal->getPrimaryLocale()|replace:'_':'-'|strip|escape:"html"}</language>
-		{/if}
-		<pubDate>{$dateUpdated|date_format:"%a, %d %b %Y %T %z"}</pubDate>
+		<language>{$language|escape}</language>
+
+	{capture assign="dateUpdated"}{$dateUpdated|strtotime}{/capture}
+		<pubDate>{$smarty.const.DATE_RSS|date:$dateUpdated}</pubDate>
 		<generator>OJS {$ojsVersion|escape}</generator>
 		<docs>http://blogs.law.harvard.edu/tech/rss</docs>
 		<ttl>60</ttl>
@@ -33,13 +33,14 @@
 		{foreach from=$announcements item=announcement}
 			<item>
 				{* required elements *}
-				<title>{$announcement->getLocalizedTitleFull()|strip|escape:"html"}</title>
-				<link>{url page="announcement" op="view" path=$announcement->getId()}</link>
-				<description>{$announcement->getLocalizedDescription()|strip|escape:"html"}</description>
+				<title>{$announcement->getLocalizedData('fullTitle')|strip|escape:"html"}</title>
+				<link>{url page="announcement" op="view" path=$announcement->id}</link>
+				<description>{$announcement->getLocalizedData('description')|strip|escape:"html"}</description>
 
 				{* optional elements *}
-				<guid isPermaLink="true">{url page="announcement" op="view" path=$announcement->getId()}</guid>
-				<pubDate>{$announcement->getDatetimePosted()|date_format:"%a, %d %b %Y %T %z"}</pubDate>
+				<guid isPermaLink="true">{url page="announcement" op="view" path=$announcement->id}</guid>
+				{capture assign="datePosted"}{$announcement->datePosted|strtotime}{/capture}
+				<pubDate>{$smarty.const.DATE_RSS|date:$datePosted}</pubDate>
 			</item>
 		{/foreach}
 	</channel>

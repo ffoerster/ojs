@@ -1,4 +1,4 @@
-; <?php exit(); // DO NOT DELETE ?>
+; <?php exit; // DO NOT DELETE?>
 ; DO NOT DELETE THE ABOVE LINE!!!
 ; Doing so will expose this configuration file through your web site!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -7,9 +7,9 @@
 ;
 ; config.TEMPLATE.inc.php
 ;
-; Copyright (c) 2014-2018 Simon Fraser University
-; Copyright (c) 2003-2018 John Willinsky
-; Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+; Copyright (c) 2014-2024 Simon Fraser University
+; Copyright (c) 2003-2024 John Willinsky
+; Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
 ;
 ; OJS Configuration settings.
 ; Rename config.TEMPLATE.inc.php to config.inc.php to use.
@@ -24,12 +24,20 @@
 
 [general]
 
+; An application-specific key that is required for the app to run
+; Internally this is used for any encryption (specifically cookie encryption if enabled)
+app_key =
+
 ; Set this to On once the system has been installed
 ; (This is generally done automatically by the installer)
 installed = Off
 
 ; The canonical URL to the OJS installation (excluding the trailing slash)
-base_url = "http://pkp.sfu.ca/ojs"
+base_url = "https://pkp.sfu.ca/ojs"
+
+; Enable strict mode. This will more aggressively cause errors/warnings when
+; deprecated behaviour exists in the codebase.
+strict = Off
 
 ; Session cookie name
 session_cookie_name = OJSSID
@@ -41,31 +49,24 @@ session_cookie_name = OJSSID
 ; (set to 0 to force expiration at end of current session)
 session_lifetime = 30
 
-; Enable support for running scheduled tasks
-; Set this to On if you have set up the scheduled tasks script to
-; execute periodically
-scheduled_tasks = Off
+; SameSite configuration for the cookie, see possible values and explanations
+; at https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite
+; To set the "Secure" attribute for the cookie see the setting force_ssl at the [security] group
+session_samesite = Lax
 
 ; Site time zone
-; Please refer to lib/pkp/registry/timeZones.xml for a full list of supported
+; Please refer to https://www.php.net/timezones for a full list of supported
 ; time zones.
-; I.e.:
-; <entry key="Europe/Amsterdam" name="Amsterdam" />
-; time_zone="Amsterdam"
+; I.e.: "Europe/Amsterdam"
+; time_zone="Europe/Amsterdam"
 time_zone = "UTC"
 
 ; Short and long date formats
-date_format_trunc = "%m-%d"
-date_format_short = "%Y-%m-%d"
-date_format_long = "%B %e, %Y"
-datetime_format_short = "%Y-%m-%d %I:%M %p"
-datetime_format_long = "%B %e, %Y - %I:%M %p"
-time_format = "%I:%M %p"
-
-; Use URL parameters instead of CGI PATH_INFO. This is useful for
-; broken server setups that don't support the PATH_INFO environment
-; variable.
-disable_path_info = Off
+date_format_short = "Y-m-d"
+date_format_long = "F j, Y"
+datetime_format_short = "Y-m-d h:i A"
+datetime_format_long = "F j, Y - h:i A"
+time_format = "h:i A"
 
 ; Use fopen(...) for URL-based reads. Modern versions of dspace
 ; will not accept requests using fopen, as it does not provide a
@@ -75,34 +76,33 @@ allow_url_fopen = Off
 
 ; Base URL override settings: Entries like the following examples can
 ; be used to override the base URLs used by OJS. If you want to use a
-; proxy to rewrite URLs to OJS, configure your proxy's URL here.
-; Syntax: base_url[journal_path] = http://www.myUrl.com
-; To override URLs that aren't part of a particular journal, use a
-; journal_path of "index".
-; Examples:
-; base_url[index] = http://www.myUrl.com
-; base_url[myJournal] = http://www.myUrl.com/myJournal
-; base_url[myOtherJournal] = http://myOtherJournal.myUrl.com
+; proxy to rewrite URLs to OJS, configure your proxy's URL with this format.
+; Syntax: base_url[journal_path] = http://www.example.com
+;
+; Example1: URLs that aren't part of a particular journal.
+;    Example1: base_url[index] = http://www.example.com
+; Example2: URLs that map to a subdirectory.
+;    Example2: base_url[myJournal] = http://www.example.com/myJournal
+; Example3: URLs that map to a subdomain.
+;    Example3: base_url[myOtherJournal] = http://myOtherJournal.example.com
 
-; Generate RESTful URLs using mod_rewrite.  This requires the
+; Generate RESTful URLs using mod_rewrite. This requires the
 ; rewrite directive to be enabled in your .htaccess or httpd.conf.
 ; See FAQ for more details.
 restful_urls = Off
 
+; Restrict the list of allowed hosts to prevent HOST header injection.
+; See docs/README.md for more details. The list should be JSON-formatted.
+; An empty string indicates that all hosts should be trusted (not recommended!)
+; Example:
+; allowed_hosts = '["myjournal.tld", "anotherjournal.tld", "mylibrary.tld"]'
+allowed_hosts = ''
+
 ; Allow the X_FORWARDED_FOR header to override the REMOTE_ADDR as the source IP
-; Set this to "On" if you are behind a reverse proxy and you control the X_FORWARDED_FOR
+; Set this to "On" if you are behind a reverse proxy and you control the
+; X_FORWARDED_FOR header.
 ; Warning: This defaults to "On" if unset for backwards compatibility.
 trust_x_forwarded_for = Off
-
-; Allow javascript files to be served through a content delivery network (set to off to use local files)
-enable_cdn = On
-
-; Set the maximum number of citation checking processes that may run in parallel.
-; Too high a value can increase server load and lead to too many parallel outgoing
-; requests to citation checking web services. Too low a value can lead to significantly
-; slower citation checking performance. A reasonable value is probably between 3
-; and 10. The more your connection bandwidth allows the better.
-citation_checking_max_processes = 3
 
 ; Display a message on the site admin and journal manager user home pages if there is an upgrade available
 show_upgrade_warning = On
@@ -115,6 +115,22 @@ enable_minified = Off
 ; alert purposes only.
 enable_beacon = On
 
+; Set this to "On" if you would like to only have a single, site-wide Privacy
+; Statement, rather than a separate Privacy Statement for each journal. Setting
+; this to "Off" will allow you to enter a site-wide Privacy Statement as well
+; as separate Privacy Statements for each journal.
+sitewide_privacy_statement = Off
+
+; The number of days a new user has to validate their account.
+; A new user account will be removed if this many days have passed since the user registered
+; their account, and they have not validated their account or logged in. If set to 0,
+; unvalidated accounts will never be removed. Use this setting to automatically remove bot registrations.
+user_validation_period = 28
+
+; Turn sandbox mode to On in order to prevent the software from interacting with outside systems.
+; Use this for development or testing purposes.
+sandbox = Off
+
 
 ;;;;;;;;;;;;;;;;;;;;;
 ; Database Settings ;
@@ -122,17 +138,22 @@ enable_beacon = On
 
 [database]
 
-driver = mysql
+driver = mysqli
 host = localhost
 username = ojs
 password = ojs
 name = ojs
 
-; Enable persistent connections
-persistent = Off
+; Set the non-standard port and/or socket, if used
+; port = 3306
+; unix_socket = /var/run/mysqld/mysqld.sock
+
+; Database collation
+; collation = utf8_general_ci
 
 ; Enable database debug output (very verbose!)
 debug = Off
+
 
 ;;;;;;;;;;;;;;;;;;
 ; Cache Settings ;
@@ -140,16 +161,12 @@ debug = Off
 
 [cache]
 
-; Choose the type of object data caching to use. Options are:
-; - memcache: Use the memcache server configured below
-; - xcache: Use the xcache variable store
-; - apc: Use the APC variable store
-; - none: Use no caching.
-object_cache = none
+; Default driver for Laravel-based caching. Currently supports opcache and file drivers.
+; By default, the file is used.
+; default = file
 
-; Enable memcache support
-memcache_hostname = localhost
-memcache_port = 11211
+; Path to store cache contents for file or opcode based caches.
+; path = cache/opcache
 
 ; For site visitors who are not logged in, many pages are often entirely
 ; static (e.g. About, the home page, etc). If the option below is enabled,
@@ -176,26 +193,11 @@ web_cache_hours = 1
 [i18n]
 
 ; Default locale
-locale = en_US
-
-; Client output/input character set
-client_charset = utf-8
+locale = en
 
 ; Database connection character set
-; Must be set to "Off" if not supported by the database server
-; If enabled, must be the same character set as "client_charset"
-; (although the actual name may differ slightly depending on the server)
-connection_charset = Off
+connection_charset = utf8
 
-; Database storage character set
-; Must be set to "Off" if not supported by the database server
-database_charset = Off
-
-; Enable character normalization to utf-8 (recommended)
-; If disabled, strings will be passed through in their native encoding
-; Note that client_charset and database collation must be set
-; to "utf-8" for this to work, as characters are stored in utf-8
-charset_normalization = Off
 
 ;;;;;;;;;;;;;;;;;
 ; File Settings ;
@@ -214,12 +216,15 @@ files_dir = files
 ; Windows users should use forward slashes
 public_files_dir = public
 
+; The maximum allowed size in kilobytes of each user's public files
+; directory. This is where user's can upload images through the
+; tinymce editor to their bio. Editors can upload images for
+; some of the settings.
+; Set this to 0 to disallow such uploads.
+public_user_dir_size = 5000
+
 ; Permissions mask for created files and directories
 umask = 0022
-
-; The minimum percentage similarity between filenames that should be considered
-; a possible revision
-filename_revision_match = 70
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -236,15 +241,25 @@ filename_revision_match = 70
 
 [security]
 
-; Force SSL connections site-wide
+; Cipher algorithm used to generate the app key and encryption purpose
+; Available options: aes-128-cbc, aes-128-gcm, aes-256-cbc, aes-256-gcm
+; cipher = aes-256-cbc
+
+; Whether cookies will be encrypted.
+; Changing this setting will log out all users.
+; cookie_encryption = On
+
+; Force SSL connections site-wide and also sets the "Secure" flag for session cookies
+; See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#secure
 force_ssl = Off
 
 ; Force SSL connections for login only
 force_login_ssl = Off
 
 ; This check will invalidate a session if the user's IP address changes.
-; Enabling this option provides some amount of additional security, but may
-; cause problems for users behind a proxy farm (e.g., AOL).
+; Enabling this option provides some additional security, but may cause
+; login problems for some users (e.g. if a user IP is changed frequently
+; by a server or network configuration).
 session_check_ip = On
 
 ; The encryption (hashing) algorithm to use for encrypting user passwords
@@ -268,27 +283,11 @@ reset_seconds = 7200
 ; stripped.
 allowed_html = "a[href|target|title],em,strong,cite,code,ul,ol,li[class],dl,dt,dd,b,i,u,img[src|alt],sup,sub,br,p"
 
-;Is implicit authentication enabled or not
+; Allowed HTML tags for submission titles only
+; Unspecified attributes will be stripped.
+allowed_title_html = "b,i,u,sup,sub"
 
-;implicit_auth = On
-
-;Implicit Auth Header Variables
-
-;implicit_auth_header_first_name = HTTP_GIVENNAME
-;implicit_auth_header_last_name = HTTP_SN
-;implicit_auth_header_email = HTTP_MAIL
-;implicit_auth_header_phone = HTTP_TELEPHONENUMBER
-;implicit_auth_header_initials = HTTP_METADATA_INITIALS
-;implicit_auth_header_mailing_address = HTTP_METADATA_HOMEPOSTALADDRESS
-;implicit_auth_header_uin = HTTP_UID
-
-; A space delimited list of uins to make admin
-;implicit_auth_admin_list = "jdoe@email.ca jshmo@email.ca"
-
-; URL of the implicit auth 'Way Finder' page. See pages/login/LoginHandler.inc.php for usage.
-
-;implicit_auth_wayf_url = "/Shibboleth.sso/wayf"
-
+;N.b.: The implicit_auth parameter has been removed in favor of plugin implementations such as shibboleth
 
 
 ;;;;;;;;;;;;;;;;;;
@@ -296,6 +295,13 @@ allowed_html = "a[href|target|title],em,strong,cite,code,ul,ol,li[class],dl,dt,d
 ;;;;;;;;;;;;;;;;;;
 
 [email]
+
+; Default method to send emails
+; Available options: sendmail, smtp, log, phpmailer
+default = sendmail
+
+; Path to the sendmail, -bs argument is for using SMTP protocol
+sendmail_path = "/usr/sbin/sendmail -bs"
 
 ; Use SMTP for sending mail instead of mail()
 ; smtp = On
@@ -305,10 +311,14 @@ allowed_html = "a[href|target|title],em,strong,cite,code,ul,ol,li[class],dl,dt,d
 ; smtp_port = 25
 
 ; Enable SMTP authentication
-; Supported mechanisms: ssl, tls
+; Supported smtp_auth: ssl, tls (see PHPMailer SMTPSecure)
 ; smtp_auth = ssl
 ; smtp_username = username
 ; smtp_password = password
+
+; Enable suppressing SSL/TLS peer verification by SMTP transports
+; Note: this is not recommended for security reasons
+; smtp_suppress_cert_check = On
 
 ; Allow envelope sender to be specified
 ; (may not be possible with some server configurations)
@@ -318,22 +328,31 @@ allowed_html = "a[href|target|title],em,strong,cite,code,ul,ol,li[class],dl,dt,d
 ; default_envelope_sender = my_address@my_host.com
 
 ; Force the default envelope sender (if present)
-; This is useful if setting up a site-wide noreply address
+; This is useful if setting up a site-wide no-reply address
 ; The reply-to field will be set with the reply-to or from address.
 ; force_default_envelope_sender = Off
 
-; Amount of time required between attempts to send non-editorial emails
-; in seconds. This can be used to help prevent email relaying via OJS.
-time_between_emails = 3600
+; Force a DMARC compliant from header (RFC5322.From)
+; If any of your users have email addresses in domains not under your control
+; you may need to set this to be compliant with DMARC policies published by
+; those 3rd party domains.
+; Setting this will move the users address into the reply-to field and the
+; from field wil be rewritten with the default_envelope_sender.
+; To use this you must set force_default_enveloper_sender = On and
+; default_envelope_sender must be set to a valid address in a domain you own.
+; force_dmarc_compliant_from = Off
 
-; Maximum number of recipients that can be included in a single email
-; (either as To:, Cc:, or Bcc: addresses) for a non-priveleged user
-max_recipients = 10
+; The display name to use with a DMARC compliant from header
+; By default the DMARC compliant from will have an empty name but this can
+; be changed by adding a text here.
+; You can use '%n' to insert the users name from the original from header
+; and '%s' to insert the localized sitename.
+; dmarc_compliant_from_displayname = '%n via %s'
 
 ; If enabled, email addresses must be validated before login is possible.
 require_validation = Off
 
-; Maximum number of days before an unvalidated account expires and is deleted
+; The number of days a user has to validate their account before their access key expires.
 validation_timeout = 14
 
 
@@ -349,9 +368,6 @@ min_word_length = 3
 ; The maximum number of search results fetched per keyword. These results
 ; are fetched and merged to provide results for searches with several keywords.
 results_per_keyword = 500
-
-; The number of hours for which keyword search results are cached.
-result_cache_hours = 1
 
 ; Paths to helper programs for indexing non-text files.
 ; Programs are assumed to output the converted text to stdout, and "%s" is
@@ -383,11 +399,13 @@ result_cache_hours = 1
 ; Enable OAI front-end to the site
 oai = On
 
-; OAI Repository identifier
+; OAI Repository identifier. This setting forms part of OAI-PMH record IDs.
+; Changing this setting may affect existing clients and is not recommended.
 repository_id = ojs.pkp.sfu.ca
 
 ; Maximum number of records per request to serve via OAI
 oai_max_records = 100
+
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ; Interface Settings ;
@@ -395,10 +413,10 @@ oai_max_records = 100
 
 [interface]
 
-; Number of items to display per page; overridable on a per-journal basis
+; Number of items to display per page; can be overridden on a per-journal basis
 items_per_page = 25
 
-; Number of page links to display; overridable on a per-journal basis
+; Number of page links to display; can be overridden on a per-journal basis
 page_links = 10
 
 
@@ -420,6 +438,33 @@ recaptcha_private_key = your_private_key
 ; Whether or not to use Captcha on user registration
 captcha_on_register = on
 
+; Whether or not to use Captcha on user login
+captcha_on_login = on
+
+; Validate the hostname in the ReCaptcha response
+recaptcha_enforce_hostname = Off
+
+; ALTCHA is a free and open-source alternative to Google's ReCaptcha
+; The options below will manage all the required configurations used to
+; work with ALTCHA instead of ReCaptcha on system
+
+; Whether or not to enable ALTCHA
+altcha = off
+
+; Private key for ALTCHA
+altcha_hmackey = 'Example key'
+
+; Whether or not to use ALTCHA on user registration
+altcha_on_register = on
+
+; Whether or not to use ALTCHA on user login
+altcha_on_login = on
+
+; Whether or not to use ALTCHA on user lost password
+altcha_on_lost_password = on
+
+; The quantity of encryption cycles performed by the ALTCHA system
+altcha_encrypt_number = 10000
 
 ;;;;;;;;;;;;;;;;;;;;;
 ; External Commands ;
@@ -429,11 +474,7 @@ captcha_on_register = on
 
 ; These are paths to (optional) external binaries used in
 ; certain plug-ins or advanced program features.
-
 ; Using full paths to the binaries is recommended.
-
-; perl (used in paracite citation parser)
-perl = /usr/bin/perl
 
 ; tar (used in backup plugin, translation packaging)
 tar = /bin/tar
@@ -446,20 +487,16 @@ tar = /bin/tar
 ; /usr/bin/java -jar ~/java/xalan.jar -HTML -IN %xml -XSL %xsl
 xslt_command = ""
 
+
 ;;;;;;;;;;;;;;;;;;
 ; Proxy Settings ;
 ;;;;;;;;;;;;;;;;;;
 
 [proxy]
 
-; Note that allow_url_fopen must be set to Off before these proxy settings
-; will take effect.
-
 ; The HTTP proxy configuration to use
-; http_host = localhost
-; http_port = 80
-; proxy_username = username
-; proxy_password = password
+; http_proxy = "http://username:password@192.168.1.1:8080"
+; https_proxy = "https://username:password@192.168.1.1:8080"
 
 
 ;;;;;;;;;;;;;;;;;;
@@ -481,3 +518,107 @@ deprecation_warnings = Off
 
 ; Log web service request information for debugging
 log_web_service_info = Off
+
+
+;;;;;;;;;;;;;;;;;;;;;;;
+; Job Queues Settings ;
+;;;;;;;;;;;;;;;;;;;;;;;
+
+[queues]
+
+; Default queue driver
+default_connection = "database"
+
+; Default queue to use when a job is added to the queue
+default_queue = "queue"
+
+; Whether or not to turn on the built-in job runner.
+; When enabled, jobs will be processed at the end of each web
+; request to the application.
+; Use of the built-in job runner is highly discouraged for high-volume
+; sites. Instead, a worker daemon or cron job should be configured
+; to process jobs off the application's main thread.
+; See: https://docs.pkp.sfu.ca/admin-guide/en/deploy-jobs
+job_runner = On
+
+; The maximum number of jobs to run in a single request when using
+; the built-in job runner.
+job_runner_max_jobs = 30
+
+; The maximum number of seconds the built-in job runner should spend
+; running jobs in a single request.
+; This should be less than the max_execution_time the server has
+; configured for PHP.
+; Lower this setting if jobs are failing due to timeouts.
+job_runner_max_execution_time = 30
+
+; The maximum consumable memory that should be spent by the built-in
+; job runner when running jobs.
+;
+; Set as a percentage, such as 80%:
+; job_runner_max_memory = 80
+;
+; Or set as a fixed value in megabytes:
+; job_runner_max_memory = 128M
+;
+; When setting a fixed value in megabytes, this should be less than the
+; memory_limit the server has configured for PHP.
+job_runner_max_memory = 80
+
+; Controls whether queued jobs should be processed by the task scheduler.
+; This setting has no effect when the job_runner and the [schedule].task_runner are enabled,
+; on this situation the jobs will be processed solely by the job runner.
+process_jobs_at_task_scheduler = Off
+
+; Remove failed jobs from the database after the following number of days.
+; Remove this setting to leave failed jobs in the database.
+delete_failed_jobs_after = 180
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Scheduled Task Settings ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[schedule]
+
+; Whether or not to turn on the built-in scheduled task runner.
+; When enabled, scheduled tasks will be processed at the end of each web
+; request to the application.
+; Use of the built-in scheduled task runner is strongly discouraged for high-volume
+; sites. Use your operating system's task scheduler instead, and configure
+; it to run the task scheduler every minute.
+;
+; Sample for the *nix crontab:
+; * * * * * php lib/pkp/tools/scheduler.php run >> /dev/null 2>&1
+;
+; See: <link-to-documentation>
+task_runner = On
+
+; How often the built-in scheduled task runner should run at the
+; end of web request life cycle (value defined in seconds).
+; This configuration will only affect the built-in task runner, it doesn't apply
+; to the system crontab configuration.
+; The default value is 60 seconds (a value smaller than that might affect the
+; application performance negatively).
+task_runner_interval = 60
+
+; When enabled, an email with the scheduled task result will only be sent when an error
+; has occurred. Otherwise, all tasks will generate a notification.
+scheduled_tasks_report_error_only = On
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+; Invitations Settings  ;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[invitations]
+
+; The number of days a user has to accept an invitation before it expires.
+expiration_days = 3
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+; New Features Settings ;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[features]

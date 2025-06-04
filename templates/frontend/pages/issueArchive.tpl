@@ -1,9 +1,9 @@
 {**
  * templates/frontend/pages/issueArchive.tpl
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @brief Display a list of recent issues.
  *
@@ -25,6 +25,9 @@
 
 <div class="page page_issue_archive">
 	{include file="frontend/components/breadcrumbs.tpl" currentTitle=$pageTitle}
+	<h1>
+		{$pageTitle|escape}
+	</h1>
 
 	{* No issues have been published *}
 	{if empty($issues)}
@@ -42,12 +45,12 @@
 
 		{* Pagination *}
 		{if $prevPage > 1}
-			{url|assign:"prevUrl" router=$smarty.const.ROUTE_PAGE page="issue" op="archive" path=$prevPage}
+			{capture assign=prevUrl}{url router=PKP\core\PKPApplication::ROUTE_PAGE page="issue" op="archive" path=$prevPage}{/capture}
 		{elseif $prevPage === 1}
-			{url|assign:"prevUrl" router=$smarty.const.ROUTE_PAGE page="issue" op="archive"}
+			{capture assign=prevUrl}{url router=PKP\core\PKPApplication::ROUTE_PAGE page="issue" op="archive"}{/capture}
 		{/if}
 		{if $nextPage}
-			{url|assign:"nextUrl" router=$smarty.const.ROUTE_PAGE page="issue" op="archive" path=$nextPage}
+			{capture assign=nextUrl}{url router=PKP\core\PKPApplication::ROUTE_PAGE page="issue" op="archive" path=$nextPage}{/capture}
 		{/if}
 		{include
 			file="frontend/components/pagination.tpl"

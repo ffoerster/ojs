@@ -1,9 +1,9 @@
 {**
  * plugins/importexport/doaj/templates/settingsForm.tpl
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * DOAJ plugin settings
  *
@@ -14,7 +14,8 @@
 		$('#doajSettingsForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
 	{rdelim});
 </script>
-<form class="pkp_form" id="doajSettingsForm" method="post" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" plugin="DOAJExportPlugin" category="importexport" verb="save"}">
+<div class="legacyDefaults">
+<form class="pkp_form" id="doajSettingsForm" method="post" action="{url router=PKP\core\PKPApplication::ROUTE_COMPONENT op="manage" plugin="DOAJExportPlugin" category="importexport" verb="save"}">
 	{csrf}
 	{fbvFormArea id="doajSettingsFormArea"}
 		{fbvFormSection}
@@ -32,3 +33,4 @@
 	{fbvFormButtons submitText="common.save"}
 	<p><span class="formRequired">{translate key="common.requiredField"}</span></p>
 </form>
+</div>

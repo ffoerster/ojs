@@ -1,0 +1,56 @@
+# Petra Cacic <petracacic3@gmail.com>, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-11-19T11:05:57+00:00\n"
+"PO-Revision-Date: 2025-05-21 14:17+0000\n"
+"Last-Translator: Petra Cacic <petracacic3@gmail.com>\n"
+"Language-Team: Croatian <http://translate.pkp.sfu.ca/projects/ojs/"
+"paymethod-manual/hr/>\n"
+"Language: hr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 4.18.2\n"
+
+msgid "plugins.paymethod.manual.displayName"
+msgstr "Ručna uplata naknada"
+
+msgid "plugins.paymethod.manual.description"
+msgstr ""
+"Administrator pretplate će ručno evidentirati primitak korisnikove uplate "
+"(izvan ovog programa)."
+
+msgid "plugins.paymethod.manual"
+msgstr "Ručna uplata naknada"
+
+msgid "plugins.paymethod.manual.settings"
+msgstr "Postavke ručne uplate"
+
+msgid "plugins.paymethod.manual.sendNotificationOfPayment"
+msgstr "Pošalji obavijest o plaćanju"
+
+msgid "plugins.paymethod.manual.paymentNotification"
+msgstr "Obavijest o plaćanju"
+
+msgid "plugins.paymethod.manual.notificationSent"
+msgstr "Obavijest o plaćanju poslana"
+
+msgid "plugins.paymethod.manual.purchase.title"
+msgstr "Naziv"
+
+msgid "plugins.paymethod.manual.purchase.fee"
+msgstr "Iznos"
+
+msgid "plugins.paymethod.manual.manualPaymentNotify.name"
+msgstr "Obavijest o ručno evidentiranoj uplati"
+
+#~ msgid "plugins.paymethod.manual.settings.instructions"
+#~ msgstr "Upute"
+
+#~ msgid "plugins.paymethod.manual.settings.manualInstructions"
+#~ msgstr ""
+#~ "Upute za uplatu naknada za korisnike koji izaberu ručnu uplatu naknada"

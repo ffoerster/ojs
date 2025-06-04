@@ -1,9 +1,9 @@
 {**
  * templates/frontend/pages/purchaseIndividualSubscription.tpl
  *
- * Copyright (c) 2013-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2013-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * User purchase individual subscription form
  *
@@ -15,6 +15,9 @@
 		{csrf}
 
 		<fieldset>
+			<legend>
+				{translate key="payment.subscription.purchase"}
+			</legend>
 			<div class="fields">
 				<div class="subscription_type">
 					<label>

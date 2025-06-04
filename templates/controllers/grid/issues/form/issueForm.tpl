@@ -1,14 +1,14 @@
 {**
  * templates/controllers/grid/issues/form/issueData.tpl
  *
- * Copyright (c) 2014-2018 Simon Fraser University
- * Copyright (c) 2003-2018 John Willinsky
- * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * Form for creation and modification of an issue
+ *
+ * @hook Templates::Editor::Issues::IssueData::AdditionalMetadata []
  *}
-
-{help file="issue-management.md#edit-issue-data" class="pkp_help_tab"}
 <script>
 	$(function() {ldelim}
 		// Attach the form handler.
@@ -41,16 +41,16 @@
 		{assign var=issuePublished value=false}
 	{/if}
 
-	{if $issuePublished}
 		{fbvFormArea id="datePublishedArea" title="editor.issues.datePublished"}
 			{fbvFormSection}
-				{if $issuePublished}
-					{fbvElement type="text" id="datePublished" value=$datePublished|date_format:$dateFormatShort size=$fbvStyles.size.SMALL class="datepicker"}
-				{/if}
+				{if !$issuePublished}
+			        {assign var=notPublishedDescription value="editor.issues.datePublished.notPublished.description"}
+			    {else}
+			        {assign var=notPublishedDescription value=""}
+			    {/if}
+				{fbvElement type="text" id="datePublished" value=$datePublished size=$fbvStyles.size.SMALL class="datepicker" autocomplete="off" label=$notPublishedDescription}
 			{/fbvFormSection}
 		{/fbvFormArea}
-	{/if}
-
 
 	{fbvFormArea id="identificationArea" title="editor.issues.identification"}
 		{fbvFormSection}
@@ -102,6 +102,10 @@
 			{/if}
 		{/fbvFormSection}
 	{/fbvFormArea}
+
+	{fbvFormSection title="publication.urlPath"}
+		{fbvElement type="text" label="publication.urlPath.description" value=$urlPath id="urlPath" size=$fbvStyles.size.MEDIUM inline=true}
+	{/fbvFormSection}
 
 	{foreach from=$pubIdPlugins item=pubIdPlugin}
 		{assign var=pubIdMetadataFile value=$pubIdPlugin->getPubIdMetadataFile()}

@@ -1,0 +1,185 @@
+# Huang Feilong <hfl@nominsang.org>, 2021.
+# wenshao521！ <wainixueer3334@gmail.com>, 2025.
+# kenrsy <kenrsy@foxmail.com>, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-11-04T08:59:12-08:00\n"
+"PO-Revision-Date: 2025-05-21 09:28+0000\n"
+"Last-Translator: kenrsy <kenrsy@foxmail.com>\n"
+"Language-Team: Chinese (Simplified) <http://translate.pkp.sfu.ca/projects/"
+"ojs/default/zh_Hans/>\n"
+"Language: zh_Hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 4.18.2\n"
+
+msgid "section.default.title"
+msgstr "文章"
+
+msgid "section.default.abbrev"
+msgstr "ART"
+
+msgid "section.default.policy"
+msgstr "栏目默认策略"
+
+msgid "default.genres.article"
+msgstr "稿件内容"
+
+msgid "default.contextSettings.authorGuidelines"
+msgstr ""
+"<p>作者被邀请向本期刊提交稿件。所有提交的稿件将由编辑进行评估，以确定其是否符"
+"合期刊的宗旨和范围。那些符合期刊要求的稿件将被送交同行评审，之后决定是否接受"
+"或拒绝该稿件。</p><p>在提交稿件之前，作者有责任获得对提交中包含的任何材料的出"
+"版许可，例如照片、文档和数据集。所有在提交中列明的作者必须同意作为作者被公开"
+"。适当情况下，研究应当经过相关伦理委员会的批准，并符合研究所在国家的法律要求"
+"。</p><p>如果稿件未达到最低质量标准，编辑可以直接拒绝。提交之前，请确保研究设"
+"计和论证结构合理，表述清晰。标题应简洁明了，摘要应能独立理解。这将增加评审人"
+"同意审稿的可能性。当您确认您的提交符合这些标准时，请按照以下检查清单准备您的"
+"稿件。</p>"
+
+msgid "default.contextSettings.checklist"
+msgstr ""
+"<p>所有提交的稿件必须符合以下要求。</p><ul><li>此提交符合<a href=\""
+"{$submissionGuidelinesUrl}\">作者指南</a>中列出的要求。</li><li>此提交未曾出"
+"版，也未提交至其他期刊审阅。</li><li>所有参考文献已核实其准确性和完整性。</li"
+"><li>所有表格和图表已编号并标注标签。</li><li>已获得发布所有照片、数据集及其"
+"他随提交材料提供的资料的许可。</li></ul>"
+
+msgid "default.contextSettings.privacyStatement"
+msgstr ""
+"<p>在本期刊网站已经输入的姓名和电子邮箱地址仅用于本期刊已经阐述的目的，绝不他"
+"用。</p>"
+
+msgid "default.contextSettings.openAccessPolicy"
+msgstr "本期刊遵循内容时开放存取原则，促使其研究免费地用于全球知识公开交流。"
+
+msgid "default.contextSettings.forReaders"
+msgstr ""
+"我们鼓励读者订阅期刊出版通知服务。 在期刊主页的顶部使用<a href=\"{$indexUrl}/"
+"{$contextPath}/user/register\">注册</a>链接。完成注册后，读者可以收到期刊每一"
+"期内容目录。这样期刊也可以获得固定读者群。期刊上的<a href=\"{$indexUrl}/"
+"{$contextPath}/about/submissions#privacyStatement\">隐私声明</a>可以保证读者"
+"的姓名和电子邮件地址不会被用于其他用途。"
+
+msgid "default.contextSettings.forAuthors"
+msgstr ""
+"对这份期刊感兴趣吗？我们建议您看一下<a href=\"{$indexUrl}/{$contextPath}/"
+"about\">关于期刊</a>的简介页面，以了解期刊的栏目方针；也请同时看一下 <a href="
+"\"{$indexUrl}/{$contextPath}/about/submissions#authorGuidelines\">作者指引</"
+"a>。作者在进行投稿之前必须在本期刊<a href=\"{$indexUrl}/{$contextPath}/user/"
+"register\">注册</a>，如果已经注册的话，可以简单地<a href=\"{$indexUrl}/index/"
+"login\">登入</a>并且开始五个步骤的投稿流程。"
+
+msgid "default.contextSettings.forLibrarians"
+msgstr ""
+"我们鼓励图书馆员将这份期刊加入其图书馆的电子期刊数据库之中。同时，这份期刊的"
+"开源码出版系统或许会适合图书馆放置他们的职员正在编辑的期刊。（请见<a href="
+"\"http://pkp.sfu.ca/ojs\">开放期刊系统（Open Journal System）</a>）。"
+
+msgid "default.contextSettings.lockssLicense"
+msgstr ""
+"这份期刊使用 LOCKSS 系统建立一份在参与之图书馆之间流通的存档系统，并且允许那"
+"些图书馆基于保存和储藏的目的，建立本期刊的永久性存档文件<a href=\"http://"
+"lockss.stanford.edu/\">更多信息……</a>"
+
+msgid "default.contextSettings.clockssLicense"
+msgstr ""
+"该期刊利用 CLOCKSS 系统在参与的图书馆之间创建分布式存档系统，并允许这些图书馆"
+"创建期刊的永久档案，以进行保存和恢复。 <a href=\"http://clockss.org/\">更"
+"多…… </a>"
+
+msgid "default.groups.name.manager"
+msgstr "期刊管理员"
+
+msgid "default.groups.plural.manager"
+msgstr "期刊管理员"
+
+msgid "default.groups.abbrev.manager"
+msgstr "JM"
+
+msgid "default.groups.name.editor"
+msgstr "期刊编辑"
+
+msgid "default.groups.plural.editor"
+msgstr "期刊编辑"
+
+msgid "default.groups.abbrev.editor"
+msgstr "JE"
+
+msgid "default.groups.name.guestEditor"
+msgstr "客座编辑"
+
+msgid "default.groups.plural.guestEditor"
+msgstr "客座编辑"
+
+msgid "default.groups.abbrev.guestEditor"
+msgstr "GE"
+
+msgid "default.groups.name.sectionEditor"
+msgstr "栏目编辑"
+
+msgid "default.groups.plural.sectionEditor"
+msgstr "栏目编辑"
+
+msgid "default.groups.abbrev.sectionEditor"
+msgstr "编辑（缩写）"
+
+msgid "default.groups.name.subscriptionManager"
+msgstr "订阅管理员"
+
+msgid "default.groups.plural.subscriptionManager"
+msgstr "订阅管理员"
+
+msgid "default.groups.abbrev.subscriptionManager"
+msgstr "订阅管理员（缩写）"
+
+msgid "default.genres.researchInstrument"
+msgstr "科研仪器"
+
+msgid "default.genres.researchMaterials"
+msgstr "科研资料"
+
+msgid "default.genres.researchResults"
+msgstr "科研结果"
+
+msgid "default.genres.transcripts"
+msgstr "成绩单"
+
+msgid "default.genres.dataAnalysis"
+msgstr "数据分析"
+
+msgid "default.genres.dataSet"
+msgstr "数据集"
+
+msgid "default.genres.sourceTexts"
+msgstr "源文本"
+
+msgid "default.groups.name.externalReviewer"
+msgstr "审稿人"
+
+msgid "default.groups.plural.externalReviewer"
+msgstr "审稿人"
+
+msgid "default.groups.abbrev.externalReviewer"
+msgstr "R"
+
+#~ msgid "default.contextSettings.checklist.notPreviouslyPublished"
+#~ msgstr "该稿件未发表过，也没有被其他期刊录用（或者在评论中给编辑说明）。"
+
+#~ msgid "default.contextSettings.checklist.fileFormat"
+#~ msgstr "稿件文件格式可以是 OpenOffice 格式、微软 Word 格式或 RTF 格式。"
+
+#~ msgid "default.contextSettings.checklist.addressesLinked"
+#~ msgstr "条件允许，尽可能提供参考文献的 URL。"
+
+#~ msgid "default.contextSettings.checklist.submissionAppearance"
+#~ msgstr ""
+#~ "该文本设置为单倍行距；字号大小为12点； 采用斜体，而不是下划线格式（URL 地"
+#~ "址除外），所有的插图、图片以及表格放在文稿的适当位置，而不一定非得是文末。"
+
+#~ msgid "default.contextSettings.checklist.bibliographicRequirements"
+#~ msgstr "文章要遵循作者指南中要求的排版格式和书目要求。"

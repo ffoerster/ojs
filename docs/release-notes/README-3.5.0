@@ -1,0 +1,38 @@
+OJS 3.5.0 Release Notes
+Git tag: 3_5_0-0
+
+Release date: 
+============================
+
+Configuration Changes
+---------------------
+
+See config.TEMPLATE.inc.php for a description and examples of all supported
+configuration parameters.
+
+New config.inc.php parameters added for general:
+    - app_key (default value: ''), application specific key will used internally for encryption/decryption. This will be automatically added at upgrade.
+
+New config.inc.php parameters added for security:
+    - cipher (default value: ''), cipher algorithm used to generate app key and encryption purpose
+    - cookie_encryption (default value: ''), allow cookie encryption when set
+
+New config.inc.php section for schedule task named schedule is added, with the following parameters:
+    - task_runner (default value: On), Whether or not to run the schedule tasks through web based task runner
+    - task_runner_interval (default value: 60), How often should the built-in web based task runner run scheduled tasks in seconds
+    - scheduled_tasks_report_error_only (default value: On), Whether or not schedule task execution failure details will be sent via mail
+
+- The setting general.scheduled_tasks has been removed. It was supposed to control the schedule tasks but had no impact.
+
+New config.inc.php parameters added for queues:
+    - process_jobs_at_task_scheduler (default value: Off): Controls whether queued jobs should be executed together with the scheduled tasks.
+
+New config.inc.php parameters added for caching:
+    - default (default value: 'file'). Can be either 'file' or 'opcache' to indicate which Laravel caching implementation should be used.
+    - path (default value: 'cache/opcache'). Use to specify a path for cache storage when using 'file' or 'opcache' drivers.
+
+
+New Features
+------------
+    #9566 : Convert session and cookie management to Laravel
+    #9895 : Introduce APP KEY feature of Laravel
