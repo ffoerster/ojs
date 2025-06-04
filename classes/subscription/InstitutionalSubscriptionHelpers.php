@@ -1,0 +1,451 @@
+<?php
+
+/**
+ * @file classes/subscription/InstitutionalSubscriptionHelpers.php
+ *
+ * Copyright (c) 2014    private static function parseIPRangeWithDash(string $ipRange): ?array
+ *
+ * @class InstitutionalSubscriptionHelpers
+ *
+ * @brief Helper functions for institutional subscription IP address handling and database operations
+ */
+
+namespace APP\subscription;
+
+use Exception;
+use Illuminate\Support\Facades\DB;
+
+class InstitutionalSubscriptionHelpers
+{
+    // Institution constants for IP range handling
+    public const IP_RANGE_WILDCARD = '*';
+    public const IP_RANGE_RANGE = '-';
+    /**
+     * Convert an IP address string to binary format for database storage
+     *
+     * @param string $ip IP address string (IPv4 or IPv6)
+     *
+     * @return array|null Array with keys: 'binary' (binary representation), 'version' (4 or 6), or null if invalid
+     */
+    public static function ipToBinary(string $ip): ?array
+    {
+        $ip = trim($ip);
+
+        // Check if it's IPv4
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $binary = inet_pton($ip);
+            if ($binary === false) {
+                return null;
+            }
+            // Convert IPv4 to IPv4-mapped IPv6 format for consistent storage
+            $ipv6Binary = str_repeat("\x00", 10) . "\xff\xff" . $binary;
+            return ['binary' => $ipv6Binary, 'version' => 4];
+        }
+
+        // Check if it's IPv6
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            $binary = inet_pton($ip);
+            if ($binary === false) {
+                return null;
+            }
+            return ['binary' => $binary, 'version' => 6];
+        }
+
+        return null;
+    }
+
+    /**
+     * Parse an IP range string and convert to binary format
+     * Supports: single IPs, CIDR notation, wildcards, and ranges
+     *
+     * @param string $ipRange IP range string
+     *
+     * @return array|null Array with keys: 'start_binary', 'end_binary', 'version', or null if invalid
+     */
+    public static function parseIPRange(string $ipRange): ?array
+    {
+        $ipRange = trim($ipRange);
+
+        // Handle range notation (e.g., "192.168.1.1-192.168.1.255")
+        if (strpos($ipRange, self::IP_RANGE_RANGE) !== false) {
+            return static::parseIPRangeWithDash($ipRange);
+        }
+
+        // Handle CIDR notation (e.g., "192.168.1.0/24" or "2001:db8::/32")
+        if (strpos($ipRange, '/') !== false) {
+            return static::parseCIDR($ipRange);
+        }
+
+        // Handle wildcards (e.g., "192.168.1.*")
+        if (strpos($ipRange, self::IP_RANGE_WILDCARD) !== false) {
+            return static::parseWildcard($ipRange);
+        }
+
+        // Handle single IP
+        $result = static::ipToBinary($ipRange);
+        if ($result) {
+            return [
+                'start_binary' => $result['binary'],
+                'end_binary' => $result['binary'],
+                'version' => $result['version']
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * Parse IP range with dash notation
+     */
+    public static function parseIPRangeWithDash(string $ipRange): ?array
+    {
+        $parts = explode(self::IP_RANGE_RANGE, $ipRange, 2);
+        if (count($parts) !== 2) {
+            return null;
+        }
+
+        $startIP = trim($parts[0]);
+        $endIP = trim($parts[1]);
+
+        // Handle wildcards in start and end
+        if (strpos($startIP, self::IP_RANGE_WILDCARD) !== false) {
+            $startIP = str_replace(self::IP_RANGE_WILDCARD, '0', $startIP);
+        }
+        if (strpos($endIP, self::IP_RANGE_WILDCARD) !== false) {
+            $endIP = str_replace(self::IP_RANGE_WILDCARD, '255', $endIP);
+        }
+
+        $startResult = static::ipToBinary($startIP);
+        $endResult = static::ipToBinary($endIP);
+
+        if (!$startResult || !$endResult || $startResult['version'] !== $endResult['version']) {
+            return null;
+        }
+
+        return [
+            'start_binary' => $startResult['binary'],
+            'end_binary' => $endResult['binary'],
+            'version' => $startResult['version']
+        ];
+    }
+
+    /**
+     * Parse CIDR notation (e.g., "192.168.1.0/24" or "2001:db8::/32")
+     */
+    public static function parseCIDR(string $cidr): ?array
+    {
+        $parts = explode('/', $cidr, 2);
+        if (count($parts) !== 2) {
+            return null;
+        }
+
+        $networkIP = trim($parts[0]);
+        $prefixLength = (int) trim($parts[1]);
+
+        $ipResult = static::ipToBinary($networkIP);
+        if (!$ipResult) {
+            return null;
+        }
+
+        if ($ipResult['version'] === 4) {
+            return static::parseCIDRv4($networkIP, $prefixLength);
+        } else {
+            return static::parseCIDRv6($networkIP, $prefixLength);
+        }
+    }
+
+    /**
+     * Parse IPv4 CIDR notation
+     */
+    public static function parseCIDRv4(string $networkIP, int $prefixLength): ?array
+    {
+        if ($prefixLength < 0 || $prefixLength > 32) {
+            return null;
+        }
+
+        $ipLong = ip2long($networkIP);
+        if ($ipLong === false) {
+            return null;
+        }
+
+        // Calculate network and broadcast addresses
+        $mask = ~((1 << (32 - $prefixLength)) - 1);
+        $networkLong = $ipLong & $mask;
+        $broadcastLong = $networkLong | ~$mask;
+
+        // Convert to IPv4-mapped IPv6 format
+        $startResult = static::ipToBinary(long2ip($networkLong));
+        $endResult = static::ipToBinary(long2ip($broadcastLong));
+
+        if (!$startResult || !$endResult) {
+            return null;
+        }
+
+        return [
+            'start_binary' => $startResult['binary'],
+            'end_binary' => $endResult['binary'],
+            'version' => 4
+        ];
+    }
+
+    /**
+     * Parse IPv6 CIDR notation
+     */
+    public static function parseCIDRv6(string $networkIP, int $prefixLength): ?array
+    {
+        if ($prefixLength < 0 || $prefixLength > 128) {
+            return null;
+        }
+
+        $networkBinary = inet_pton($networkIP);
+        if ($networkBinary === false) {
+            return null;
+        }
+
+        // Create the subnet mask
+        $maskBinary = '';
+        $bytesWithFullMask = intval($prefixLength / 8);
+        $remainingBits = $prefixLength % 8;
+
+        // Full bytes
+        for ($i = 0; $i < $bytesWithFullMask; $i++) {
+            $maskBinary .= "\xff";
+        }
+
+        // Partial byte
+        if ($remainingBits > 0) {
+            $partialMask = 0xff << (8 - $remainingBits);
+            $maskBinary .= chr($partialMask);
+        }
+
+        // Pad to 16 bytes
+        $maskBinary = str_pad($maskBinary, 16, "\x00");
+
+        // Calculate network address
+        $networkBinary = $networkBinary & $maskBinary;
+
+        // Calculate broadcast address (all host bits set to 1)
+        $invertedMask = '';
+        for ($i = 0; $i < 16; $i++) {
+            $invertedMask .= chr(~ord($maskBinary[$i]));
+        }
+        $broadcastBinary = $networkBinary | $invertedMask;
+
+        return [
+            'start_binary' => $networkBinary,
+            'end_binary' => $broadcastBinary,
+            'version' => 6
+        ];
+    }
+
+    /**
+     * Parse wildcard notation (e.g., "192.168.1.*")
+     */
+    public static function parseWildcard(string $wildcard): ?array
+    {
+        // Replace wildcards with appropriate start/end values
+        $startIP = str_replace(self::IP_RANGE_WILDCARD, '0', $wildcard);
+        $endIP = str_replace(self::IP_RANGE_WILDCARD, '255', $wildcard);
+
+        $startResult = static::ipToBinary($startIP);
+        $endResult = static::ipToBinary($endIP);
+
+        if (!$startResult || !$endResult || $startResult['version'] !== $endResult['version']) {
+            return null;
+        }
+
+        return [
+            'start_binary' => $startResult['binary'],
+            'end_binary' => $endResult['binary'],
+            'version' => $startResult['version']
+        ];
+    }
+
+    /**
+     * Get the IP version (4 or 6) of an IP address
+     *
+     * @param string $ip IP address
+     *
+     * @return int|null 4 for IPv4, 6 for IPv6, null if invalid
+     */
+    public static function getIPVersion(string $ip): ?int
+    {
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            return 4;
+        }
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            return 6;
+        }
+        return null;
+    }
+
+    /**
+     * Check if the database has IPv6 support columns
+     *
+     * @return bool True if IPv6 support columns exist
+     */
+    public static function hasIPv6Support(): bool
+    {
+        static $hasSupport = null;
+
+        if ($hasSupport === null) {
+            try {
+                // Check if the new columns exist
+                $result = DB::select("SHOW COLUMNS FROM institution_ip LIKE 'ip_version'");
+                $hasSupport = count($result) > 0;
+            } catch (Exception $e) {
+                $hasSupport = false;
+            }
+        }
+
+        return $hasSupport;
+    }
+
+    /**
+     * Generate SQL for IP range checking based on database type
+     *
+     * @param string $ipBinaryParam Parameter placeholder for IP binary
+     * @param string $startColumn Column name for start IP binary
+     * @param string $endColumn Column name for end IP binary
+     *
+     * @return string SQL condition for IP range checking
+     */
+    public static function getBinaryIPRangeSQL(string $ipBinaryParam, string $startColumn, string $endColumn): string
+    {
+        $driver = DB::getDriverName();
+
+        switch ($driver) {
+            case 'mysql':
+                // MySQL/MariaDB: Use direct binary comparison for best performance
+                // INET6_ATON would be ideal but requires converting string IPs at query time
+                // Our approach stores pre-converted binary data for optimal performance
+                return "{$ipBinaryParam} BETWEEN {$startColumn} AND COALESCE({$endColumn}, {$startColumn})";
+            case 'pgsql':
+                // PostgreSQL: Use binary comparison (could be enhanced to use inet type in future)
+                return "{$ipBinaryParam} BETWEEN {$startColumn} AND COALESCE({$endColumn}, {$startColumn})";
+            default:
+                // Generic binary comparison for other databases
+                return "{$ipBinaryParam} BETWEEN {$startColumn} AND COALESCE({$endColumn}, {$startColumn})";
+        }
+    }
+
+    /**
+     * Prepare binary data for database insertion based on database type
+     *
+     * @param string $binaryData Raw binary data
+     *
+     * @return mixed Prepared data for database insertion
+     */
+    public static function prepareBinaryForDB(string $binaryData)
+    {
+        // Both MySQL and PostgreSQL handle binary data the same way in our use case
+        return $binaryData;
+    }
+
+    /**
+     * Check if MySQL supports INET6_ATON and INET6_NTOA functions
+     * These functions are available in MySQL 5.6.3+ and MariaDB 10.0.12+
+     */
+    public static function supportsMySQLINET6Functions(): bool
+    {
+        static $supports = null;
+
+        if ($supports === null) {
+            try {
+                $result = DB::select('SELECT INET6_ATON(?) AS test', ['::1']);
+                $supports = count($result) > 0;
+            } catch (Exception $e) {
+                $supports = false;
+            }
+        }
+
+        return $supports;
+    }
+
+    /**
+     * Enhanced IP matching using database-specific optimizations when available
+     *
+     * @param string $ip IP address to check
+     * @param int $journalId Journal ID
+     * @param string $dateSql Date constraint SQL
+     * @param object $dao DAO instance for database operations
+     *
+     * @return int|false Subscription ID or false if not found
+     */
+    public static function checkIPWithDatabaseOptimization(string $ip, int $journalId, string $dateSql, $dao)
+    {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'mysql' && static::supportsMySQLINET6Functions()) {
+            // Use MySQL's INET6_ATON for optimal IPv6 performance
+            return static::checkIPWithMySQLINET6($ip, $journalId, $dateSql, $dao);
+        }
+
+        // Fallback to binary comparison method
+        $ipData = static::ipToBinary($ip);
+        if (!$ipData) {
+            return false;
+        }
+
+        $binaryParam = static::prepareBinaryForDB($ipData['binary']);
+        $ipRangeSQL = static::getBinaryIPRangeSQL('?', 'iip.ip_start_binary', 'iip.ip_end_binary');
+
+        $result = $dao->retrieve(
+            'SELECT	iss.subscription_id
+            FROM	institutional_subscriptions iss
+                JOIN institution_ip iip ON (iip.institution_id = iss.institution_id)
+                JOIN subscriptions s ON (iss.subscription_id = s.subscription_id)
+                JOIN subscription_types st ON (s.type_id = st.type_id)
+            WHERE	s.journal_id = ?
+                AND iip.ip_version = ?
+                AND ' . $ipRangeSQL . '
+                AND s.status = ' . Subscription::SUBSCRIPTION_STATUS_ACTIVE . '
+                AND st.institutional = 1
+                AND (
+                    st.duration IS NULL
+                    OR (' . $dateSql . ')
+                )
+                AND (
+                    st.format = ' . SubscriptionType::SUBSCRIPTION_TYPE_FORMAT_ONLINE . '
+                    OR st.format = ' . SubscriptionType::SUBSCRIPTION_TYPE_FORMAT_PRINT_ONLINE . '
+                )',
+            [$journalId, $ipData['version'], $binaryParam]
+        );
+
+        $row = $result->current();
+        return $row ? $row->subscription_id : false;
+    }
+
+    /**
+     * Use MySQL's INET6_ATON for IP matching (most efficient for IPv6)
+     */
+    public static function checkIPWithMySQLINET6(string $ip, int $journalId, string $dateSql, $dao)
+    {
+        $ipVersion = static::getIPVersion($ip);
+
+        $result = $dao->retrieve(
+            'SELECT	iss.subscription_id
+            FROM	institutional_subscriptions iss
+                JOIN institution_ip iip ON (iip.institution_id = iss.institution_id)
+                JOIN subscriptions s ON (iss.subscription_id = s.subscription_id)
+                JOIN subscription_types st ON (s.type_id = st.type_id)
+            WHERE	s.journal_id = ?
+                AND iip.ip_version = ?
+                AND INET6_ATON(?) BETWEEN iip.ip_start_binary AND COALESCE(iip.ip_end_binary, iip.ip_start_binary)
+                AND s.status = ' . Subscription::SUBSCRIPTION_STATUS_ACTIVE . '
+                AND st.institutional = 1
+                AND (
+                    st.duration IS NULL
+                    OR (' . $dateSql . ')
+                )
+                AND (
+                    st.format = ' . SubscriptionType::SUBSCRIPTION_TYPE_FORMAT_ONLINE . '
+                    OR st.format = ' . SubscriptionType::SUBSCRIPTION_TYPE_FORMAT_PRINT_ONLINE . '
+                )',
+            [$journalId, $ipVersion, $ip]
+        );
+
+        $row = $result->current();
+        return $row ? $row->subscription_id : false;
+    }
+}
