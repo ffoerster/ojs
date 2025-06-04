@@ -302,6 +302,33 @@ class InstitutionalSubscriptionHelpers
     }
 
     /**
+     * Check if PostgreSQL inet type support is available
+     *
+     * @return bool True if PostgreSQL inet columns exist
+     */
+    public static function hasPostgreSQLInetSupport(): bool
+    {
+        static $hasSupport = null;
+
+        if ($hasSupport === null) {
+            $driver = DB::getDriverName();
+            if ($driver !== 'pgsql') {
+                $hasSupport = false;
+            } else {
+                try {
+                    // Check if the inet columns exist
+                    $result = DB::select("SELECT column_name FROM information_schema.columns WHERE table_name = 'institution_ip' AND column_name = 'ip_start_inet'");
+                    $hasSupport = count($result) > 0;
+                } catch (Exception $e) {
+                    $hasSupport = false;
+                }
+            }
+        }
+
+        return $hasSupport;
+    }
+
+    /**
      * Generate SQL for IP range checking based on database type
      *
      * @param string $ipBinaryParam Parameter placeholder for IP binary
@@ -317,11 +344,9 @@ class InstitutionalSubscriptionHelpers
         switch ($driver) {
             case 'mysql':
                 // MySQL/MariaDB: Use direct binary comparison for best performance
-                // INET6_ATON would be ideal but requires converting string IPs at query time
-                // Our approach stores pre-converted binary data for optimal performance
                 return "{$ipBinaryParam} BETWEEN {$startColumn} AND COALESCE({$endColumn}, {$startColumn})";
             case 'pgsql':
-                // PostgreSQL: Use binary comparison (could be enhanced to use inet type in future)
+                // PostgreSQL: Use binary comparison
                 return "{$ipBinaryParam} BETWEEN {$startColumn} AND COALESCE({$endColumn}, {$startColumn})";
             default:
                 // Generic binary comparison for other databases
@@ -344,7 +369,6 @@ class InstitutionalSubscriptionHelpers
 
     /**
      * Check if MySQL supports INET6_ATON and INET6_NTOA functions
-     * These functions are available in MySQL 5.6.3+ and MariaDB 10.0.12+
      */
     public static function supportsMySQLINET6Functions(): bool
     {
@@ -377,8 +401,9 @@ class InstitutionalSubscriptionHelpers
         $driver = DB::getDriverName();
 
         if ($driver === 'mysql' && static::supportsMySQLINET6Functions()) {
-            // Use MySQL's INET6_ATON for optimal IPv6 performance
             return static::checkIPWithMySQLINET6($ip, $journalId, $dateSql, $dao);
+        } elseif ($driver === 'pgsql' && static::hasPostgreSQLInetSupport()) {
+            return static::checkIPWithPostgreSQLInet($ip, $journalId, $dateSql, $dao);
         }
 
         // Fallback to binary comparison method
@@ -417,7 +442,7 @@ class InstitutionalSubscriptionHelpers
     }
 
     /**
-     * Use MySQL's INET6_ATON for IP matching (most efficient for IPv6)
+     * Use MySQL's INET6_ATON for IP matching
      */
     public static function checkIPWithMySQLINET6(string $ip, int $journalId, string $dateSql, $dao)
     {
@@ -447,5 +472,119 @@ class InstitutionalSubscriptionHelpers
 
         $row = $result->current();
         return $row ? $row->subscription_id : false;
+    }
+
+    /**
+     * Use PostgreSQL's inet type for IP matching
+     */
+    public static function checkIPWithPostgreSQLInet(string $ip, int $journalId, string $dateSql, $dao)
+    {
+        $ipVersion = static::getIPVersion($ip);
+
+        // For PostgreSQL inet type, we can use native IP comparison operators
+        $result = $dao->retrieve(
+            'SELECT	iss.subscription_id
+            FROM	institutional_subscriptions iss
+                JOIN institution_ip iip ON (iip.institution_id = iss.institution_id)
+                JOIN subscriptions s ON (iss.subscription_id = s.subscription_id)
+                JOIN subscription_types st ON (s.type_id = st.type_id)
+            WHERE	s.journal_id = ?
+                AND iip.ip_version = ?
+                AND (
+                    -- Handle CIDR ranges (single inet value)
+                    (iip.ip_end_inet IS NULL AND ?::inet <<= iip.ip_start_inet)
+                    OR
+                    -- Handle IP ranges (start and end inet values)
+                    (iip.ip_end_inet IS NOT NULL AND ?::inet BETWEEN iip.ip_start_inet AND iip.ip_end_inet)
+                    OR
+                    -- Handle single IP (start equals input IP)
+                    (iip.ip_end_inet IS NULL AND ?::inet = iip.ip_start_inet)
+                )
+                AND s.status = ' . Subscription::SUBSCRIPTION_STATUS_ACTIVE . '
+                AND st.institutional = 1
+                AND (
+                    st.duration IS NULL
+                    OR (' . $dateSql . ')
+                )
+                AND (
+                    st.format = ' . SubscriptionType::SUBSCRIPTION_TYPE_FORMAT_ONLINE . '
+                    OR st.format = ' . SubscriptionType::SUBSCRIPTION_TYPE_FORMAT_PRINT_ONLINE . '
+                )',
+            [$journalId, $ipVersion, $ip, $ip, $ip]
+        );
+
+        $row = $result->current();
+        return $row ? $row->subscription_id : false;
+    }
+
+    /**
+     * Convert IP range data to PostgreSQL inet format for storage
+     *
+     * @param string $ipString Original IP string
+     * @param array $parsedRange Parsed IP range data
+     *
+     * @return array Array with 'start_inet' and 'end_inet' keys for PostgreSQL storage
+     */
+    public static function convertToPostgreSQLInet(string $ipString, array $parsedRange): array
+    {
+        $result = ['start_inet' => null, 'end_inet' => null];
+
+        // Handle CIDR notation - PostgreSQL inet can store CIDR directly
+        if (strpos($ipString, '/') !== false) {
+            if (filter_var(explode('/', $ipString)[0], FILTER_VALIDATE_IP)) {
+                $result['start_inet'] = $ipString; // Store CIDR as-is
+                $result['end_inet'] = null; // No end needed for CIDR
+            }
+            return $result;
+        }
+
+        // Handle single IP
+        if (isset($parsedRange['start_binary']) && !isset($parsedRange['end_binary'])) {
+            $startIP = static::binaryToIP($parsedRange['start_binary'], $parsedRange['version']);
+            if ($startIP) {
+                $result['start_inet'] = $startIP;
+                $result['end_inet'] = null;
+            }
+            return $result;
+        }
+
+        // Handle IP ranges
+        if (isset($parsedRange['start_binary']) && isset($parsedRange['end_binary'])) {
+            $startIP = static::binaryToIP($parsedRange['start_binary'], $parsedRange['version']);
+            $endIP = static::binaryToIP($parsedRange['end_binary'], $parsedRange['version']);
+
+            if ($startIP && $endIP) {
+                $result['start_inet'] = $startIP;
+                $result['end_inet'] = $endIP;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Convert binary IP representation back to string
+     *
+     * @param string $binary Binary IP representation
+     * @param int $version IP version (4 or 6)
+     *
+     * @return string|null IP address string or null if conversion fails
+     */
+    public static function binaryToIP(string $binary, int $version): ?string
+    {
+        if ($version === 4) {
+            // Extract IPv4 from IPv4-mapped IPv6 format
+            if (strlen($binary) === 16) {
+                $ipv4Bytes = substr($binary, 12, 4);
+                $ip = inet_ntop($ipv4Bytes);
+                return $ip ?: null;
+            }
+        } elseif ($version === 6) {
+            // Direct IPv6 binary
+            $ip = inet_ntop($binary);
+            return $ip ?: null;
+        }
+
+        return null;
     }
 }
